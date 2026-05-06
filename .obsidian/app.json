@@ -1,0 +1,9 @@
+{
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "attachmentFolderPath": "vault/90_meta/attachments",
+  "promptDelete": true,
+  "showLineNumber": true,
+  "spellcheck": false
+}
