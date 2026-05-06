@@ -1,0 +1,196 @@
+{
+  "main": {
+    "id": "d19fa2467f27cc85",
+    "type": "split",
+    "children": [
+      {
+        "id": "a7c596edaccf9434",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e3954469b36f3d0b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "sources/official/cli/admin-setup.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "admin-setup"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2d567995ea799439",
+    "type": "split",
+    "children": [
+      {
+        "id": "774914a89657cde3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f0408c1f6adb20d7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "ファイルエクスプローラ"
+            }
+          },
+          {
+            "id": "3007757da68f7eb3",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "検索"
+            }
+          },
+          {
+            "id": "38ba892d8846d876",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "ブックマーク"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 214.5
+  },
+  "right": {
+    "id": "afe6ded31e3865f4",
+    "type": "split",
+    "children": [
+      {
+        "id": "2654655d55dbd5e5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1894691f96b64390",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "sources/official/cli/admin-setup.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "admin-setupへのバックリンク"
+            }
+          },
+          {
+            "id": "2c9f3ffabaac3e33",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "sources/official/cli/admin-setup.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "admin-setupからのアウトゴーイングリンク"
+            }
+          },
+          {
+            "id": "1a1d5cd78586ccee",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "タグ"
+            }
+          },
+          {
+            "id": "8b73b3edc0c0d56f",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "すべてのプロパティ"
+            }
+          },
+          {
+            "id": "e1f1b41f1a09410b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "sources/official/cli/admin-setup.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "admin-setupのアウトライン"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:クイックスイッチャーを開く": false,
+      "graph:グラフビューを開く": false,
+      "canvas:新規キャンバスを作成": false,
+      "daily-notes:今日のデイリーノートを開く": false,
+      "templates:テンプレートを挿入": false,
+      "command-palette:コマンドパレットを開く": false,
+      "bases:新規ベースを作成": false
+    }
+  },
+  "active": "e3954469b36f3d0b",
+  "lastOpenFiles": [
+    "sources/official/cli/basic-usage.md",
+    "sources/official/cli/admin-setup.md",
+    "sources/official/cli/installation.md",
+    "sources/official/cli/configuration.md",
+    "index.md",
+    "sources/official/cli/permissions.md",
+    "sources/official/cli/keybindings.md"
+  ]
+}

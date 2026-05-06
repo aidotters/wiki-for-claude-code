@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== vault/index.md ===' && cat vault/index.md && echo '' && echo '=== vault/log.md (tail 50 lines / approx. last 10 entries) ===' && tail -n 50 vault/log.md"
+          }
+        ]
+      }
+    ]
+  }
+}

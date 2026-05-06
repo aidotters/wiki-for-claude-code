@@ -1,0 +1,1 @@
+../../../../vault/90_meta/lint-rules.md
