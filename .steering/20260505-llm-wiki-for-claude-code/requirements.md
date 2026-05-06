@@ -143,39 +143,39 @@ LLM-Wiki for Claude Code プロジェクトの **Phase 1（規約確立 + Skill 
 
 ### Vault ディレクトリ構造（機能1）
 
-- [ ] `vault/sources/official/{cli,hooks,slash-commands,mcp,settings,sdk}/`, `vault/sources/community/{tips,workflows,integrations,troubleshooting}/`, `vault/concepts/`, `vault/entities/`, `vault/comparisons/`, `vault/syntheses/`, `vault/30_drafts/`, `vault/90_meta/` の全ディレクトリが Git 上に存在する（空ディレクトリは `.gitkeep` 配置）
-- [ ] `vault/index.md`, `vault/log.md`, `vault/overview.md` の雛形が存在する
-- [ ] プロジェクトルートを Obsidian Vault として開いた際にエラーが出ない
-- [ ] `.obsidian/workspace.json` 等の個別設定が `.gitignore` に追加されている
+- [x] `vault/sources/official/{cli,hooks,slash-commands,mcp,settings,sdk}/`, `vault/sources/community/{tips,workflows,integrations,troubleshooting}/`, `vault/concepts/`, `vault/entities/`, `vault/comparisons/`, `vault/syntheses/`, `vault/30_drafts/`, `vault/90_meta/` の全ディレクトリが Git 上に存在する（空ディレクトリは `.gitkeep` 配置）
+- [x] `vault/index.md`, `vault/log.md`, `vault/overview.md` の雛形が存在する
+- [x] プロジェクトルートを Obsidian Vault として開いた際にエラーが出ない
+- [x] `.obsidian/workspace.json` 等の個別設定が `.gitignore` に追加されている
 
 ### frontmatter 規約（機能2）
 
-- [ ] `vault/90_meta/frontmatter-spec.md` に共通必須キー、`type` 別追加必須キー、運用メタの一覧・型・サンプル・`status` 遷移規則が記載されている
-- [ ] `vault/90_meta/_schemas/frontmatter.schema.json` に `type` 別 JSON Schema が配置されている
-- [ ] frontmatter 検証スクリプトが、共通必須キー欠損時にエラー終了コード（非ゼロ）を返す
-- [ ] frontmatter 検証スクリプトが、`type=source` の追加必須キー（`source_url`, `fetched_at`, `claude_code_version`）欠損時にエラー終了コードを返す
-- [ ] frontmatter 検証スクリプトが、`status` または `type` が enum 外の値の場合にエラー終了コードを返す
-- [ ] Phase 1 で生成した10本の記事が全て検証スクリプトで PASS する
+- [x] `vault/90_meta/frontmatter-spec.md` に共通必須キー、`type` 別追加必須キー、運用メタの一覧・型・サンプル・`status` 遷移規則が記載されている
+- [x] `vault/90_meta/_schemas/frontmatter.schema.json` に `type` 別 JSON Schema が配置されている
+- [x] frontmatter 検証スクリプトが、共通必須キー欠損時にエラー終了コード（非ゼロ）を返す
+- [x] frontmatter 検証スクリプトが、`type=source` の追加必須キー（`source_url`, `fetched_at`, `claude_code_version`）欠損時にエラー終了コードを返す
+- [x] frontmatter 検証スクリプトが、`status` または `type` が enum 外の値の場合にエラー終了コードを返す
+- [x] Phase 1 で生成した10本の記事が全て検証スクリプトで PASS する
 
 ### Markdown 制約（機能3）
 
-- [ ] `vault/90_meta/markdown-rules.md` に許可記法・禁止記法・`source` 種別の3部構成強制ルールが記載されている
-- [ ] Markdown 制約検証スクリプトが、Dataview ブロック（` ```dataview `）を含むファイルでエラー終了コードを返す
-- [ ] Markdown 制約検証スクリプトが、Callout 記法（`> [!note]`）を含むファイルでエラー終了コードを返す
-- [ ] `three_part_validator` が、`type=source` で3部構成セクションが欠けている記事でエラー終了コードを返す
-- [ ] `three_part_validator` が、`type=source` 以外の記事には3部構成を要求しないことを確認
+- [x] `vault/90_meta/markdown-rules.md` に許可記法・禁止記法・`source` 種別の3部構成強制ルールが記載されている
+- [x] Markdown 制約検証スクリプトが、Dataview ブロック（` ```dataview `）を含むファイルでエラー終了コードを返す
+- [x] Markdown 制約検証スクリプトが、Callout 記法（`> [!note]`）を含むファイルでエラー終了コードを返す
+- [x] `three_part_validator` が、`type=source` で3部構成セクションが欠けている記事でエラー終了コードを返す
+- [x] `three_part_validator` が、`type=source` 以外の記事には3部構成を要求しないことを確認
 
 ### 情報源ホワイトリスト（機能4）
 
-- [ ] `vault/90_meta/sources.md` に最低1ソース（`anthropic-claude-docs`）が登録されている
-- [ ] 各ソースに `id`, `name`, `base_url`, `fetch_method`, `rate_limit`, `license_notes`, `enabled` の全フィールドが記載されている
-- [ ] `vault/90_meta/license-notes.md` に Anthropic Usage Policy と docs.claude.com の利用規約の要点・全文転載禁止原則が記載されている
+- [x] `vault/90_meta/sources.md` に最低1ソース（`anthropic-claude-docs`）が登録されている
+- [x] 各ソースに `id`, `name`, `base_url`, `fetch_method`, `rate_limit`, `license_notes`, `enabled` の全フィールドが記載されている
+- [x] `vault/90_meta/license-notes.md` に Anthropic Usage Policy と docs.claude.com の利用規約の要点・全文転載禁止原則が記載されている
 
 ### lint ルール（機能5）
 
-- [ ] `vault/90_meta/lint-rules.md` に検出6項目（孤立ページ、陳腐化、矛盾、低信頼度、不足ページ、index 同期）が記載されている
-- [ ] `agent/validators/lint_validator` が孤立ページ・陳腐化・低信頼度・index 同期を検出する
-- [ ] `agent lint --all` 実行で全違反件数のレポートと `vault/log.md` への追記が行われる
+- [x] `vault/90_meta/lint-rules.md` に検出6項目（孤立ページ、陳腐化、矛盾、低信頼度、不足ページ、index 同期）が記載されている
+- [x] `agent/validators/lint_validator` が孤立ページ・陳腐化・低信頼度・index 同期を検出する
+- [x] `agent lint --all` 実行で全違反件数のレポートと `vault/log.md` への追記が行われる
 
 ### `source` 種別記事10本（機能6、2026-05-06 改訂）
 
@@ -193,40 +193,40 @@ LLM-Wiki for Claude Code プロジェクトの **Phase 1（規約確立 + Skill 
 
 ### Slash Command + Skill パッケージ（機能7、ADR-014）
 
-- [ ] `.claude/commands/wiki-ingest.md`, `.claude/commands/wiki-regenerate.md`, `.claude/commands/wiki-lint.md` が存在し、内部で `agent <subcommand>` を呼び出す指示が記載されている
-- [ ] `.claude/skills/llm-wiki-for-claude-code/SKILL.md` が存在し、`name`, `description`, `triggers` を含み、Wiki ページ編集時に context-aware にロードされる旨が `description` に明記されている
-- [ ] `.claude/skills/llm-wiki-for-claude-code/` 配下に `commands/` サブディレクトリが**存在しない**ことを確認（ADR-014: 公式仕様外）
-- [ ] `.claude/skills/llm-wiki-for-claude-code/references/` 配下が `vault/90_meta/` のシンボリックリンクで正しく解決される
-- [ ] `references/page-templates.md` に `source` 種別の実体テンプレートが含まれる
-- [ ] `.claude/skills/llm-wiki-for-claude-code/hooks/session-start.md` でセッション起動時に `vault/index.md` と `vault/log.md` 直近10件がロードされることを確認
-- [ ] Claude Code から `/wiki-ingest <official-url>` 実行で `vault/sources/official/<cat>/` 配下に記事が生成される
-- [ ] Claude Code から `/wiki-regenerate <path>` 実行で記事の再生成が完了する
-- [ ] Claude Code から `/wiki-lint` 実行で違反件数レポートが出力される
+- [x] `.claude/commands/wiki-ingest.md`, `.claude/commands/wiki-regenerate.md`, `.claude/commands/wiki-lint.md` が存在し、内部で `agent <subcommand>` を呼び出す指示が記載されている
+- [x] `.claude/skills/llm-wiki-for-claude-code/SKILL.md` が存在し、`name`, `description`, `triggers` を含み、Wiki ページ編集時に context-aware にロードされる旨が `description` に明記されている
+- [x] `.claude/skills/llm-wiki-for-claude-code/` 配下に `commands/` サブディレクトリが**存在しない**ことを確認（ADR-014: 公式仕様外）
+- [x] `.claude/skills/llm-wiki-for-claude-code/references/` 配下が `vault/90_meta/` のシンボリックリンクで正しく解決される
+- [x] `references/page-templates.md` に `source` 種別の実体テンプレートが含まれる
+- [x] `.claude/skills/llm-wiki-for-claude-code/hooks/session-start.md` でセッション起動時に `vault/index.md` と `vault/log.md` 直近10件がロードされることを確認
+- [x] Claude Code から `/wiki-ingest <official-url>` 実行で `vault/sources/official/<cat>/` 配下に記事が生成される
+- [x] Claude Code から `/wiki-regenerate <path>` 実行で記事の再生成が完了する
+- [x] Claude Code から `/wiki-lint` 実行で違反件数レポートが出力される
 
 ### ローカル CLI（機能8）
 
-- [ ] `agent/runners/local.{ts|py}` が存在し、引数解析・サブコマンド分岐が実装されている
-- [ ] `agent ingest --source-url <url> --category <hooks|cli>` で新ソースから `source` 種別ページが生成される
-- [ ] `agent regenerate --target vault/sources/official/hooks/[ファイル名].md` で対象記事の再生成が完了する
-- [ ] 同一記事を連続2回 `agent regenerate --target [同一path]` 実行し、2回目で意味のある差分（本文・要約・補足）が `git diff` 上に出ないこと（タイムスタンプ等の機械的更新は許容）
-- [ ] `agent validate --all` で全記事の frontmatter / Markdown 制約検証が30秒以内に完了する
-- [ ] `agent lint --all` で違反件数レポートを出力し、違反ありなら終了コード4を返す
-- [ ] HTTP 取得失敗時は対象記事を更新せずエラーログを残し、終了コード非ゼロ（2）を返す
-- [ ] 終了コード使い分け（0=成功, 1=検証, 2=取得, 3=LLM, 4=lint）が動作する
+- [x] `agent/runners/local.{ts|py}` が存在し、引数解析・サブコマンド分岐が実装されている
+- [x] `agent ingest --source-url <url> --category <hooks|cli>` で新ソースから `source` 種別ページが生成される
+- [x] `agent regenerate --target vault/sources/official/hooks/[ファイル名].md` で対象記事の再生成が完了する
+- [x] 同一記事を連続2回 `agent regenerate --target [同一path]` 実行し、2回目で意味のある差分（本文・要約・補足）が `git diff` 上に出ないこと（タイムスタンプ等の機械的更新は許容）
+- [x] `agent validate --all` で全記事の frontmatter / Markdown 制約検証が30秒以内に完了する
+- [x] `agent lint --all` で違反件数レポートを出力し、違反ありなら終了コード4を返す
+- [x] HTTP 取得失敗時は対象記事を更新せずエラーログを残し、終了コード非ゼロ（2）を返す
+- [x] 終了コード使い分け（0=成功, 1=検証, 2=取得, 3=LLM, 4=lint）が動作する
 
 ### 実装言語・ツール選定（機能9）
 
-- [ ] `docs/core/decisions.md` に ADR-010（実装言語選定）が追加されている
-- [ ] パッケージマネージャ、テストフレームワーク、リンタ・フォーマッタが確定し ADR に記載されている
-- [ ] 選定結果に従って `package.json` または `pyproject.toml` がリポジトリに存在する
-- [ ] `npm test`（または `uv run pytest`）が PASS する（最低限のスモークテスト）
+- [x] `docs/core/decisions.md` に ADR-010（実装言語選定）が追加されている
+- [x] パッケージマネージャ、テストフレームワーク、リンタ・フォーマッタが確定し ADR に記載されている
+- [x] 選定結果に従って `package.json` または `pyproject.toml` がリポジトリに存在する
+- [x] `npm test`（または `uv run pytest`）が PASS する（最低限のスモークテスト）
 
 ### CI（最小セット）
 
-- [ ] `.github/workflows/validate.yml` が存在する
-- [ ] PR / push で `agent validate --all` 相当のチェックが走り、規約違反時に CI が fail する
-- [ ] ユニットテストが CI で実行され、失敗時に fail する
-- [ ] `agent lint --all` は CI 内では実行しない（人間レビュー支援用のため）
+- [x] `.github/workflows/validate.yml` が存在する
+- [x] PR / push で `agent validate --all` 相当のチェックが走り、規約違反時に CI が fail する
+- [x] ユニットテストが CI で実行され、失敗時に fail する
+- [x] `agent lint --all` は CI 内では実行しない（人間レビュー支援用のため）
 
 ## 成功指標（2026-05-06 改訂）
 

@@ -5,20 +5,20 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
 
 # 受け入れテストレポート
 
-> 生成日時: 2026-05-06 09:45 JST（初回）／ 2026-05-06 再検証完了 ／ 2026-05-06 手動確認 UX 5項目完了
+> 生成日時: 2026-05-06 09:45 JST（初回）／ 2026-05-06 再検証完了 ／ 2026-05-06 手動確認全項目完了
 > 対象: `.steering/20260505-llm-wiki-for-claude-code/requirements.md`
 > 対象 Phase: Phase 1（規約確立 + Skill 雛形 + 公式 hooks/cli の `source` 種別10本）
 
-## サマリー（UX 手動確認後 / 2026-05-06）
+## サマリー（手動確認完了 / 2026-05-06）
 
 | 項目 | 件数 |
 |------|------|
 | 受け入れ条件 総数 | 47 |
 | 自動検証 PASS | 39 |
 | 自動検証 FAIL | 0 |
-| 手動確認 PASS | 8（UX 5項目 + 外部連携 3項目） |
-| 手動確認 残 | 1（CI 動作確認 1項目） |
-| **総合判定** | **CONDITIONAL_PASS**（自動検証 PASS、UX 手動確認 PASS、外部連携・CI 手動確認 残存） |
+| 手動確認 PASS | 9（UX 5項目 + 外部連携 3項目 + CI 動作確認 1項目） |
+| 手動確認 残 | 0 |
+| **総合判定** | **PASS** |
 
 **初回 FAIL → 再検証後の状態**:
 1. F1（confidence ≥ 0.7）: **解消** — 受入れ条件を再調整（内容整合 8本は `reviewed / 0.6〜0.7`、drift 検出 2本は `draft / 0.5 維持`）。`published / 0.7` は Phase 2 完了条件へ移送
@@ -166,7 +166,7 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
 
 ---
 
-## 2. 手動確認チェックリスト（UX 5項目 PASS / 外部連携・CI は未実施）
+## 2. 手動確認チェックリスト（全 9項目 PASS / 2026-05-06 完了）
 
 ### UX / Claude Code 起動関連（全 5項目 PASS / 2026-05-06）
 
@@ -209,7 +209,7 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
   - **観測（2026-05-06）**: 当初 `.claude/skills/llm-wiki-for-claude-code/hooks/session-start.md` のみではホスト側の hook 機構に接続されておらず、`/context` で `index.md` / `log.md` のロードが観測できなかった（Skill のトークン消費 81 のみ）。**対応**: `.claude/settings.json` に `hooks.SessionStart` を追加し、`echo + cat vault/index.md + tail -n 50 vault/log.md` を起動時に実行するよう変更。再起動後 `/context` で Messages 2.1k トークン（hook 出力相当のサイズ）を確認、ホスト側ロード成立。Skill 内 `hooks/session-start.md` は LLM 側の活用ガイダンスとして共存
   - **関連変更**: `.claude/settings.json` 新規作成（プロジェクト共有、`permissions` を含む既存の `.claude/settings.local.json` は無変更）
 
-### 外部連携 / ネットワーク（未実施）
+### 外部連携 / ネットワーク（全 3項目 PASS / 2026-05-06）
 
 - [x] **条件**: 各記事の `source_url` への HTTP HEAD でステータス200（機能6）
   - **確認手順**:
@@ -259,13 +259,18 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
     ```
   - **補足**: `local.py` のハンドラで `SourceNotWhitelistedError` / `FetchFailedError` → `EXIT_FETCH (2)` にマップされており、ホワイトリスト判定段階で fetch 前にブロックされる経路を確認
 
-### CI 動作確認（未実施）
+### CI 動作確認（PASS / 2026-05-06）
 
-- [ ] **条件**: PR / push で `validate.yml` が走り、規約違反時に CI が fail
+- [x] **条件**: PR / push で `validate.yml` が走り、規約違反時に CI が fail
   - **確認手順**:
-    1. ブランチに意図的な規約違反（Dataview ブロック等）を入れて push
-    2. Actions の `validate` ジョブが fail することを確認
+    1. ブランチ `ci-fail-test` を作成し、`vault/sources/official/cli/ci-fail-probe.md` に Dataview ブロックを含む違反ファイルを配置
+    2. `main` を base とする Pull Request を作成（`validate.yml` のトリガーは `push: [main]` / `pull_request: [main]` のみ）
+    3. Actions の `validate` ジョブが fail することを確認
   - **期待結果**: ジョブが fail し、Validate Wiki content ステップで違反検出
+  - **観測（2026-05-06）**: PR #1（`aidotters/wiki-for-claude-code`）で `validate` ワークフロー起動、❌ **failed** 確認。ローカル `agent validate --all` でも同等の違反 2件（missing frontmatter / Dataview ブロックは禁止）を exit=1 で検出
+  - **手順上の発見**:
+    1. `validate.yml` のトリガーは `push: [main]` / `pull_request: [main]` のみ。当初は feature ブランチへの push だけで CI が起動すると誤認したが、PR 作成が必要だった
+    2. プローブファイルを当初 `vault/30_drafts/ci-fail-probe.md` に配置したが、`agent/orchestration/validate.py:50` の `VAULT_EXCLUDE_DIRS = {"30_drafts"}` でスキップされ違反検出されなかった。`vault/sources/official/cli/` 配下に移動して再検出に成功
 
 ---
 
@@ -304,7 +309,7 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
 - [x] 補足 a〜c の設計上の懸念点を全て解消（regenerate 運用注意の文書化、transclusion_validator 統合、agent verify-links 分離）
 - [x] 自動検証フロー全 PASS を確認（pytest 107 / ruff / mypy / agent validate / agent verify-links）
 
-### 手動確認（CONDITIONAL_PASS → PASS への昇格に必要）
+### 手動確認（PASS / 2026-05-06 完了）
 
 - [x] UX / Claude Code 起動関連 5項目（2026-05-06 完了）
   - [x] Obsidian Vault 起動エラー無し
@@ -316,16 +321,16 @@ description: LLM-Wiki for Claude Code Phase 1 受け入れテストレポート
   - [x] HTTP HEAD 200（全 11 URL で 200 観測）
   - [x] 連続100文字一致なし（`agent verify-links` で全 11 記事 PASS）
   - [x] HTTP 取得失敗時の終了コード 2（exit=2 / "URL not in whitelist" / ファイル未作成）
-- [ ] CI 動作確認 1項目（未実施）
-  - [ ] PR / push での CI fail 動作確認
-- [ ] 全項目クリア後、本レポートに完了マークと観測ログを追記
+- [x] CI 動作確認 1項目（PR #1 で `validate.yml` ジョブ failed 確認 / 2026-05-06）
+- [x] 全項目クリア完了、本レポートに完了マークと観測ログを追記
 
 ### PASS への昇格（手動確認完了後）
 
 - [x] requirements.md の機能6（`source` 種別記事10本）を再調整版に更新済み
-- [ ] requirements.md の残チェックボックスを `[x]` に更新（外部連携・CI 手動確認完了後）
+- [ ] requirements.md の残チェックボックスを `[x]` に更新
 - [ ] `docs/ideas/20260505-llm-wiki-for-claude-code.md` のステータスを `verified` に更新（検証日: 2026-05-06）
 - [ ] Phase 2 計画の起票（drift 記事 2本の全面書き直し、実 LLM 統合、残8本の published 昇格を含む）
+- [ ] CI fail 確認の test 副産物クリーンアップ（PR #1 close / ブランチ `ci-fail-test` 削除 / `vault/sources/official/cli/ci-fail-probe.md` 削除）
 
 ---
 

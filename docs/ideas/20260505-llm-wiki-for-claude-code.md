@@ -1,7 +1,7 @@
 # LLM-Wiki for Claude Code
 
 > 作成日: 2026-05-05
-> ステータス: draft
+> ステータス: verified（Phase 1 完了 / 検証日: 2026-05-06）
 > 優先度: 未定
 
 ## 概要
