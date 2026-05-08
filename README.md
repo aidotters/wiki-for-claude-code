@@ -40,7 +40,7 @@ Claude Code セッション内で以下を実行:
 # 取込み
 uv run agent ingest --source-url https://code.claude.com/docs/ja/hooks --category hooks
 
-# 再生成（⚠ 後述の運用注意あり）
+# 再生成（既定: claude-code バックエンド経由で AUTO 領域のみ実 LLM で更新）
 uv run agent regenerate --target vault/sources/official/hooks/pre-tool-use.md
 
 # lint 検査（人間レビュー支援、終了コード 0 / 4）
@@ -56,9 +56,7 @@ uv run agent verify-links --target vault/sources/official/cli/permissions.md
 uv run agent verify-links --no-transclusion   # HEAD のみ
 ```
 
-> **⚠ `agent regenerate` の運用注意**: 現状の LLM 統合はスタブで、低品質なダミー本文で
-> 既存記事を上書きする。実 LLM 統合（Phase 2/3）が完了するまで、本番運用記事に対して
-> `agent regenerate` を実行しないこと。冪等性検証用の統合テストでのみ動作確認している。
+> **`agent regenerate` の現行仕様**（ADR-018 / ADR-019, 2026-05-08 accepted）: AUTO 領域（`<!-- AUTO:START purpose=... -->` ... `<!-- AUTO:END -->`）のみを実 LLM 経由で再生成。AUTO 外の人手編集は保護される。`auto_section_managed: true` のページは `content_hash` 一致時 no-op、`--force` で強制再生成可能。バックエンドは環境変数で切替: 既定 `WIKI_LLM_BACKEND=claude-code`（`claude` バイナリ + Max プラン認証必須）/ `anthropic`（`ANTHROPIC_API_KEY` 必須・従量課金、CI 向け）/ `stub`（テスト・冪等性検証用）。
 
 #### 終了コード
 

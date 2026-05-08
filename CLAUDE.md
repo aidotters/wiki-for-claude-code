@@ -137,13 +137,11 @@ uv run agent lint --all
 
 # Wiki 操作（Slash Command 経由でも実行可能）
 uv run agent ingest --source-url <url> --category <hooks|cli|...>
-uv run agent regenerate --target <path>      # ⚠ 後述の運用注意あり
+uv run agent regenerate --target <path>      # AUTO 領域のみ実 LLM で再生成（既定 claude-code バックエンド）
 uv run agent verify-links                    # source_url の HTTP 到達 + 連続100文字一致検査（ネットワーク依存）
 ```
 
-> **⚠ `agent regenerate` の運用注意**: 現状の LLM 統合はスタブで、低品質ダミー本文で記事を上書きする。
-> 実 LLM 統合（Phase 2/3）が完了するまで、本番運用記事に対して `agent regenerate` を実行しない。
-> 冪等性検証用の統合テストでのみ動作確認している。
+> **`agent regenerate` の現行仕様**: ADR-018 / ADR-019（2026-05-08 accepted）で AUTO 領域のみを実 LLM 経由で再生成する設計に確定。既定バックエンドは `claude-code`（`claude` バイナリ + Max プラン認証が必要）。CI / API 利用は `WIKI_LLM_BACKEND=anthropic`、テスト・冪等性検証は `WIKI_LLM_BACKEND=stub` で切替可能。`auto_section_managed: true` のページに対して AUTO マーカー外の人手編集は保護される（`--force` 未指定時は content_hash 一致で no-op）。
 
 CI: `.github/workflows/validate.yml` で `ruff` / `mypy` / `pytest` / `agent validate --all` を実行。
 `agent verify-links` はネットワーク依存のため CI に含めない（手動 / 別ジョブで実行）。
@@ -151,12 +149,12 @@ CI: `.github/workflows/validate.yml` で `ruff` / `mypy` / `pytest` / `agent val
 ### Phase 2-A ステータス（2026-05-06 着手）
 
 - **規約・ADR 整備完了**: ADR-015（AUTO マーカー）/ ADR-016（Phase 2 pivot）/ ADR-017（公式 source 縮退仕様）起票、`vault/90_meta/auto-marker-spec.md` および `metrics.md` 新規作成、`frontmatter-spec.md` / `markdown-rules.md` / `sources.md` / `license-notes.md` / JSON Schema を縮退仕様 + recipe 種別対応で改訂
-- **agent 層拡張完了**: `MalformedAutoMarkerError` / `ConfigurationError` / `LLMInvocationError` 新設、`anthropic>=0.40` 依存追加、`markdown_writer.py` に AUTO 領域処理（`extract_auto_regions` / `replace_auto_regions`）、`citation_validator.py` / `frontmatter_validator.py` に recipe 分岐、`orchestration/llm.py` に AnthropicBackend（mock テストで挙動検証、prompt caching 有効）、`fetchers/awesome_claude_code.py` 新設、`orchestration/regenerate.py` に AUTO 領域 noop 経路を追加
+- **agent 層拡張完了**: `MalformedAutoMarkerError` / `ConfigurationError` / `LLMInvocationError` 新設、`anthropic>=0.40` 依存追加、`markdown_writer.py` に AUTO 領域処理（`extract_auto_regions` / `replace_auto_regions`）、`citation_validator.py` / `frontmatter_validator.py` に recipe 分岐、`orchestration/llm.py` に AnthropicBackend（mock テストで挙動検証、prompt caching 有効）、`fetchers/awesome_claude_code.py` 新設、`orchestration/regenerate.py` に AUTO 領域処理を追加（後に ADR-019 で実 LLM 呼び出しへ昇格、2026-05-08）
 - **コンテンツ生成**: 公式 source 11 本（cli 6 + hooks 5）を縮退仕様に書き換え + AUTO 領域導入、recipe 5 本（claude-code-setup / hooks-introduction / permission-control-practice / post-tool-use-formatter / keybindings-customization）を新規作成
 - **A-7 中止条件発動**: awesome-claude-code が CC BY-NC-ND 4.0 と判明したため A-3 を停止、`vault/90_meta/sources.md` で `enabled: false` 設定。Phase 2-B B-3 で別系統に切替予定（fetcher 実装は流用可能な状態で残置）
 - **テスト件数**: Phase 1 の 107 件 → **159 件 PASS**（目標 130 件超）。`uv run ruff check .` / `uv run mypy agent` / `uv run agent validate --all`（16 本） / `uv run agent lint --all`（違反 0） すべて PASS
-- **未完了（empirical 検証は別セッション）**: `WIKI_LLM_BACKEND=anthropic` 経由の `agent regenerate` 実 API 動作確認、prompt caching 効果計測、Slash Command（`/wiki-ingest`、`/wiki-regenerate`、`/wiki-lint`）のローカル Claude Code からの動作確認は API キー設定の上で別セッションで実施
-- **`agent regenerate` 本番運用ガード**: 実 LLM 統合の empirical 検証完了まで継続維持（`stub` 既定のため stub バックエンドの動作は冪等で安全、`anthropic` 既定への切替は empirical 検証 PASS 後）
+- **empirical 検証**: `agent regenerate` の実 LLM 経由動作確認は `claude-code` バックエンド経由で PASS 済（2026-05-08、ADR-018 / ADR-019、73.33s 実走 + 冪等性確認）。`WIKI_LLM_BACKEND=anthropic` 経由 + Slash Command のローカル動作確認は別途必要時に実施
+- **`agent regenerate` 本番運用ガード解除（2026-05-08）**: ADR-018 empirical PASS（73.33s 実走確認）+ ADR-019 完了に伴い、`make_backend()` の既定値を `claude-code` に昇格。`auto_section_managed: true` のページは AUTO 領域のみ実 LLM 経由で再生成され、AUTO 外の人手編集は保護される。`status: published` ページへの実行はスラッシュコマンド側で `--force` 確認フローを保持
 
 ### Phase 1 ステータス（2026-05-06 更新）
 

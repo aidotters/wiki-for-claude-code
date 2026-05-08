@@ -351,7 +351,7 @@ Wiki 編集者として、自分が手で書いた解説を自動 PR で上書�
 **成功基準**:
 - [ ] PRD 機能1〜6 の受け入れ条件全クリア
 - [ ] `source` 種別記事10本が `status: published` かつ `confidence ≥ 0.7` で存在
-- [ ] `agent regenerate` の冪等動作
+- [x] `agent regenerate` の冪等動作
 - [ ] スラッシュコマンド `/wiki-ingest` / `/wiki-regenerate` / `/wiki-lint` がローカルで動作（`.claude/commands/` 配下）
 
 ### Phase 2: 派生ページ種別追加 + AUTO マーカー + 公式全6カテゴリ展開

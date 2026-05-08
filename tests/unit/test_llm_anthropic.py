@@ -117,8 +117,20 @@ class TestLLMUsage:
 
 
 class TestMakeBackend:
-    def test_default_returns_stub(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_default_returns_claude_code(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # 2026-05-08: ADR-018 で empirical PASS 後の既定値昇格。未設定時は claude-code。
+        import agent.orchestration.llm as llm_module
+
         monkeypatch.delenv("WIKI_LLM_BACKEND", raising=False)
+        monkeypatch.setattr(llm_module.shutil, "which", lambda _: "/usr/local/bin/claude")
+        backend = make_backend()
+        from agent.orchestration.llm import ClaudeCodeBackend
+
+        assert isinstance(backend, ClaudeCodeBackend)
+
+    def test_explicit_stub_returns_stub(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # 既定切替後も明示指定で StubLLMClient を選択できる
+        monkeypatch.setenv("WIKI_LLM_BACKEND", "stub")
         backend = make_backend()
         assert isinstance(backend, StubLLMClient)
 

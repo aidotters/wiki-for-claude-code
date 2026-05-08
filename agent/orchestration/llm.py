@@ -2,9 +2,9 @@
 
 Backend 切替は環境変数で行う:
 
-- `WIKI_LLM_BACKEND=stub` (既定): 決定的スタブ。`StubLLMClient` を返す
+- `WIKI_LLM_BACKEND=claude-code` (既定): `claude-agent-sdk` 経由で Claude Code (Max プラン) を呼ぶ。`ClaudeCodeBackend` を返す
 - `WIKI_LLM_BACKEND=anthropic`: 実 SDK 経由（API キー必須・従量課金）。`AnthropicBackend` を返す
-- `WIKI_LLM_BACKEND=claude-code`: `claude-agent-sdk` 経由で Claude Code (Max プラン) を呼ぶ。`ClaudeCodeBackend` を返す
+- `WIKI_LLM_BACKEND=stub`: 決定的スタブ。`StubLLMClient` を返す（テスト・冪等性検証用）
 - `WIKI_LLM_MODEL` (任意): 既定 `claude-sonnet-4-6`
 - `ANTHROPIC_API_KEY` (`anthropic` backend でのみ必須): API キー
 
@@ -318,7 +318,7 @@ def _parse_claude_code_response(
 
 def make_backend() -> LLMBackend:
     """環境変数 `WIKI_LLM_BACKEND` に基づいてバックエンドを生成する。"""
-    backend_name = os.environ.get("WIKI_LLM_BACKEND", "stub").lower()
+    backend_name = os.environ.get("WIKI_LLM_BACKEND", "claude-code").lower()
     if backend_name == "anthropic":
         return AnthropicBackend()
     if backend_name == "claude-code":

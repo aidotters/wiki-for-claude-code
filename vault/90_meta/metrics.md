@@ -50,30 +50,64 @@ Phase 2-A 完了時に以下を算出する:
 
 ## 計測実績テーブル
 
-### 公式 source 縮退（A-2 / 10 本）
+### 公式 source 縮退（A-2 / 11 本、当初想定 10 本に admin-setup 追加で 11 本に拡大）
+
+> **計測方法**（2026-05-08 機械的算出）: `manual_fix_count` は `git diff a158a41..eb0bd8b -- <path>` の touched lines = `(insertions + deletions)` を採用。Phase 2-A バルク作業時の LLM は `stub` のため `llm_*` / `cache_hit_rate` は計測対象外（`0` で記録、解釈は `N/A` 扱い）。`generated_at` は Phase 2-A 着手日 `2026-05-06`、`review_minutes` は未計測（`0` で記録）。
 
 | path | generated_at | reviewer | review_minutes | auto_fix_count | manual_fix_count | llm_input_tokens | llm_output_tokens | cache_hit_rate |
 |------|--------------|----------|----------------|----------------|------------------|------------------|-------------------|----------------|
+| vault/sources/official/cli/admin-setup.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 35 | 0 | 0 | 0.0 |
+| vault/sources/official/cli/basic-usage.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 62 | 0 | 0 | 0.0 |
+| vault/sources/official/cli/configuration.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 45 | 0 | 0 | 0.0 |
+| vault/sources/official/cli/installation.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 45 | 0 | 0 | 0.0 |
+| vault/sources/official/cli/keybindings.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 48 | 0 | 0 | 0.0 |
+| vault/sources/official/cli/permissions.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 54 | 0 | 0 | 0.0 |
+| vault/sources/official/hooks/overview.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 49 | 0 | 0 | 0.0 |
+| vault/sources/official/hooks/post-tool-use.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 40 | 0 | 0 | 0.0 |
+| vault/sources/official/hooks/pre-tool-use.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 50 | 0 | 0 | 0.0 |
+| vault/sources/official/hooks/stop.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 43 | 0 | 0 | 0.0 |
+| vault/sources/official/hooks/user-prompt-submit.md | 2026-05-06T17:09:57+09:00 | tak | 0 | 0 | 39 | 0 | 0 | 0.0 |
 
 ### コミュニティ source 取込み（A-3 / awesome-claude-code 5 本）
 
-| path | generated_at | reviewer | review_minutes | auto_fix_count | manual_fix_count | llm_input_tokens | llm_output_tokens | cache_hit_rate |
-|------|--------------|----------|----------------|----------------|------------------|------------------|-------------------|----------------|
-
-### recipe 種別生成（A-4 / 5 本以上）
+> A-7 中止条件発動（CC BY-NC-ND 4.0 検出、2026-05-06）により記録対象なし。Phase 2-B B-3 で別系統に再選定後に開始。
 
 | path | generated_at | reviewer | review_minutes | auto_fix_count | manual_fix_count | llm_input_tokens | llm_output_tokens | cache_hit_rate |
 |------|--------------|----------|----------------|----------------|------------------|------------------|-------------------|----------------|
+
+### recipe 種別生成（A-4 / 5 本）
+
+> recipe は LLM 介在なしで人手作成（ADR-016）。`manual_fix_count` は `git diff a158a41..eb0bd8b -- <path>` の insertions（新規作成のため deletions = 0）。`llm_*` は計測対象外（`0` で記録）。
+
+| path | generated_at | reviewer | review_minutes | auto_fix_count | manual_fix_count | llm_input_tokens | llm_output_tokens | cache_hit_rate |
+|------|--------------|----------|----------------|----------------|------------------|------------------|-------------------|----------------|
+| vault/recipes/claude-code-setup.md | 2026-05-08T15:20:34+09:00 | tak | 0 | 0 | 35 | 0 | 0 | 0.0 |
+| vault/recipes/hooks-introduction.md | 2026-05-08T15:20:34+09:00 | tak | 0 | 0 | 35 | 0 | 0 | 0.0 |
+| vault/recipes/keybindings-customization.md | 2026-05-08T15:20:34+09:00 | tak | 0 | 0 | 34 | 0 | 0 | 0.0 |
+| vault/recipes/permission-control-practice.md | 2026-05-08T15:20:34+09:00 | tak | 0 | 0 | 35 | 0 | 0 | 0.0 |
+| vault/recipes/post-tool-use-formatter.md | 2026-05-08T15:20:34+09:00 | tak | 0 | 0 | 34 | 0 | 0 | 0.0 |
+
+### empirical 実行記録（claude-code バックエンド経由）
+
+> ADR-018 empirical 検証および以降の `agent regenerate` 実走を記録。`manual_fix_count` は実 LLM 出力に対する事後人手修正の行数。`review_minutes` 未計測時は `0`。
+
+| path | generated_at | reviewer | review_minutes | auto_fix_count | manual_fix_count | llm_input_tokens | llm_output_tokens | cache_hit_rate | 備考 |
+|------|--------------|----------|----------------|----------------|------------------|------------------|-------------------|----------------|------|
+| vault/sources/official/cli/basic-usage.md | 2026-05-08T15:00:00+09:00 | tak | 0 | 0 | 0 | 0 | 0 | 0.0 | ADR-018 empirical PASS（73.33s、AUTO 領域のみ更新）|
 
 ## Phase 2-A 中止条件チェック
 
 集計結果（Phase 2-A 実装ループ完了時点）:
 
-- 修正率: 算出未了（A-3 中止により記事数が想定の 75% に縮小、A-2 / A-4 のみ計測対象）
-- LLM コスト想定比: 算出未了（実 SDK 統合の empirical 検証は API キー設定の上で別セッションで実施）
+- 修正率: **算出対象外**（Phase 2-A 16 本は `stub` バックエンド or 手書き作成のため A-7 の `>50%` 閾値判定の前提条件を満たさない）
+  - 公式 source 11 本 touched lines 合計 = 510 行、平均 46.4 行/本（縮退仕様 ADR-017 への移行作業による既存内容の置換が大半）
+  - recipe 5 本 insertions 合計 = 173 行、平均 34.6 行/本（新規作成）
+  - 真の修正率計測は **2026-05-08 の empirical 実行（claude-code 経由）以降**を対象とし、empirical 実行記録テーブルへの追記で判定する
+- LLM コスト想定比: empirical 1 回目（73.33s / basic-usage）はトークン計測未取得（`ResultMessage.usage` が SDK で未提供）。Phase 2-B `agent metrics` で自動取得検討
 - **ライセンス問題: あり**（awesome-claude-code が CC BY-NC-ND 4.0、2026-05-06 検出）
 
 → A-7 中止条件発動: A-3 タスクを停止、別系統への切替は Phase 2-B B-3 に持ち越し
+→ A-6-2 / A-6-3 解消（2026-05-08）: 16 本の機械的算出値を上記テーブルに記録、empirical 開始日を起点に真のレビュー率計測へ移行
 
 詳細:
 
