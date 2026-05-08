@@ -1,10 +1,11 @@
 # Claude Code バックエンド化（`ClaudeCodeBackend` 追加）
 
 > 作成日: 2026-05-08
-> ステータス: draft
+> ステータス: **done**（実装・empirical PASS・既定昇格まで完了 / 2026-05-08）
 > 優先度: P1
 > 起点: `.steering/20260506-llm-wiki-for-claude-code-phase-2a/acceptance-test-report.md` §6（2026-05-07 追記）
-> 関連 ADR: ADR-018（Proposed、本アイデア確定後に起票）
+> 関連 ADR: ADR-018（Accepted、改訂で既定昇格まで反映）/ ADR-019（Accepted、AUTO 領域実 LLM 化）
+> 後続 steering: `.steering/20260508-claude-code-llm-backend/`、`.steering/20260508-default-backend-switch/`
 
 ## 概要
 
@@ -130,53 +131,53 @@ class ClaudeCodeBackend:
 
 ### バックエンド実装
 
-- [ ] `agent/orchestration/llm.py` に `ClaudeCodeBackend` が `LLMBackend` Protocol 実装として追加されている
-- [ ] `WIKI_LLM_BACKEND=claude-code` で `ClaudeCodeBackend` が選択される
-- [ ] `claude-agent-sdk` が `pyproject.toml` の依存に追加されている
-- [ ] `AnthropicBackend` / `StubBackend` の既存実装に変更がない（diff で確認可能）
+- [x] `agent/orchestration/llm.py` に `ClaudeCodeBackend` が `LLMBackend` Protocol 実装として追加されている
+- [x] `WIKI_LLM_BACKEND=claude-code` で `ClaudeCodeBackend` が選択される
+- [x] `claude-agent-sdk` が `pyproject.toml` の依存に追加されている
+- [x] `AnthropicBackend` / `StubBackend` の既存実装に変更がない（diff で確認可能）
 
 ### 環境変数・設定
 
-- [ ] `WIKI_LLM_MODEL` の値が `claude-code` バックエンドでも反映される
-- [ ] `claude-code` 選択時に `ANTHROPIC_API_KEY` が読まれない
-- [ ] `.env.example` に `WIKI_LLM_BACKEND=claude-code` の例が追記されている
+- [x] `WIKI_LLM_MODEL` の値が `claude-code` バックエンドでも反映される
+- [x] `claude-code` 選択時に `ANTHROPIC_API_KEY` が読まれない
+- [x] `.env.example` に `WIKI_LLM_BACKEND=claude-code` の例が追記されている
 
 ### 起動時チェック
 
-- [ ] `claude` バイナリが PATH に存在しない環境で `WIKI_LLM_BACKEND=claude-code` 指定時、`ConfigurationError`（exit code 3）で停止する
-- [ ] エラーメッセージに `claude /login` 等の誘導が含まれている
+- [x] `claude` バイナリが PATH に存在しない環境で `WIKI_LLM_BACKEND=claude-code` 指定時、`ConfigurationError`（exit code 3）で停止する
+- [x] エラーメッセージに `claude /login` 等の誘導が含まれている
 
 ### empirical 検証（Phase 2-A 案 Y 経路）
 
-- [ ] `WIKI_LLM_BACKEND=claude-code uv run agent regenerate --target vault/recipes/claude-code-setup.md` が成功する
-- [ ] 実行ログから所要時間が記録され、`metrics.md` に追記可能な形式で出力される
-- [ ] ローカル Claude Code から `/wiki-regenerate vault/recipes/claude-code-setup.md` で AUTO 領域のみ更新されることを確認（Phase 2-A S-2 と同じ手順）
+- [x] `WIKI_LLM_BACKEND=claude-code uv run agent regenerate --target vault/recipes/claude-code-setup.md` が成功する
+- [x] 実行ログから所要時間が記録され、`metrics.md` に追記可能な形式で出力される
+- [x] ローカル Claude Code から `/wiki-regenerate vault/recipes/claude-code-setup.md` で AUTO 領域のみ更新されることを確認（Phase 2-A S-2 と同じ手順）
 
 ### 既定値切替（empirical PASS 後）
 
-- [ ] `WIKI_LLM_BACKEND` 既定が `claude-code` に昇格している
-- [ ] `CLAUDE.md` の `agent regenerate` 本番運用ガード注記が削除されている（Phase 2-A A-1-6）
-- [ ] `metrics.md` に Phase 2-A の対象 16 本（公式 11 + recipe 5）の修正率が記録されている（Phase 2-A A-6-2 / A-6-3）
+- [x] `WIKI_LLM_BACKEND` 既定が `claude-code` に昇格している
+- [x] `CLAUDE.md` の `agent regenerate` 本番運用ガード注記が削除されている（Phase 2-A A-1-6）
+- [x] `metrics.md` に Phase 2-A の対象 16 本（公式 11 + recipe 5）の修正率が記録されている（Phase 2-A A-6-2 / A-6-3）
 
 ### エラーハンドリング
 
-- [ ] API 呼び出し時の認証エラーが `LLMInvocationError` にラップされる
-- [ ] `claude-agent-sdk` 内部例外も `LLMInvocationError` にラップされる（実 SDK 例外型の絞り込みは Phase 2-B で再検討）
-- [ ] `cache_read_input_tokens` が取得できない場合、`LLMUsage` で `None` または明示的な未取得マーカーを返し、metrics.md は `N/A` で記録できる
+- [x] API 呼び出し時の認証エラーが `LLMInvocationError` にラップされる
+- [x] `claude-agent-sdk` 内部例外も `LLMInvocationError` にラップされる（実 SDK 例外型の絞り込みは Phase 2-B で再検討）
+- [x] `cache_read_input_tokens` が取得できない場合、`LLMUsage` で `None` または明示的な未取得マーカーを返し、metrics.md は `N/A` で記録できる
 
 ### テスト
 
-- [ ] `ClaudeCodeBackend` のユニットテストが追加され、mock 経由で `invoke` の挙動が検証されている
-- [ ] バイナリ未存在時の `ConfigurationError` がテストで再現される
-- [ ] テスト総数が **159 → 165 件以上** に増加（目安）
-- [ ] `uv run pytest tests/` 全 PASS
-- [ ] `uv run ruff check .` PASS
-- [ ] `uv run mypy agent` PASS
+- [x] `ClaudeCodeBackend` のユニットテストが追加され、mock 経由で `invoke` の挙動が検証されている
+- [x] バイナリ未存在時の `ConfigurationError` がテストで再現される
+- [x] テスト総数が **159 → 165 件以上** に増加（目安）
+- [x] `uv run pytest tests/` 全 PASS
+- [x] `uv run ruff check .` PASS
+- [x] `uv run mypy agent` PASS
 
 ### ADR
 
-- [ ] ADR-018（LLM バックエンドの Claude Code 経由化）が `docs/core/decisions.md` に起票されている
-- [ ] ADR-018 で `AnthropicBackend` / `StubBackend` 残置の判断が明文化されている
+- [x] ADR-018（LLM バックエンドの Claude Code 経由化）が `docs/core/decisions.md` に起票されている
+- [x] ADR-018 で `AnthropicBackend` / `StubBackend` 残置の判断が明文化されている
 
 ## スコープ外
 
@@ -261,3 +262,4 @@ wiki-for-claude-code/
 ## 更新履歴
 
 - 2026-05-08: 初版作成（ブレインストーミングセッション）。実装方式 A（`claude-agent-sdk`）採用、env var 拡張、既定値段階展開、`StubBackend` 残置を確定。
+- 2026-05-08: **done**。`ClaudeCodeBackend` 実装 + ADR-018 起票完了 → empirical PASS（73.33s 実走、AUTO 領域のみ実 LLM 経由で再生成、冪等性確認）→ 既定バックエンドを `claude-code` へ昇格、`CLAUDE.md` 本番運用ガード注記を解除、`metrics.md` に対象 16 本の運用記録追加。後続 ADR として ADR-019（AUTO 領域実 LLM 化）を Accepted。

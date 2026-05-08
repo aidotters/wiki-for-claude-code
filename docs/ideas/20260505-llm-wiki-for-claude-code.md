@@ -1,7 +1,7 @@
 # LLM-Wiki for Claude Code
 
 > 作成日: 2026-05-05
-> ステータス: verified（Phase 1 完了 / 検証日: 2026-05-06） / **Phase 2 以降は pivot を反映**（2026-05-06）
+> ステータス: verified（Phase 1 完了 / 検証日: 2026-05-06） / **Phase 2 以降は pivot を反映**（2026-05-06） / **Phase 2-A 実 LLM 統合完了**（2026-05-08、`ClaudeCodeBackend` 既定昇格 + AUTO 領域実 LLM 化）
 > 優先度: 未定
 > 関連 plan: `~/.claude/plans/synchronous-tickling-dragon.md`（Phase 2 pivot 提案）
 
@@ -288,61 +288,63 @@ agent/
 
 ### Phase 1: 規約確立 + Skill 雛形 + 公式 hooks/cli の `source` 種別10本
 
+> **Phase 1 ステータス**: 2026-05-06 verified（CLAUDE.md「Phase 1 ステータス」節と整合）。
+
 #### 構造とドキュメント
-- [ ] `vault/` ディレクトリ構造（ページ種別ベース）が作成され、Obsidian Vault として認識される
-- [ ] `vault/index.md`, `vault/log.md`, `vault/overview.md` の雛形が配置されている
-- [ ] `vault/90_meta/sources.md` に情報源ホワイトリストが確定（Phase 1 では公式 docs.claude.com のみ）
-- [ ] `vault/90_meta/frontmatter-spec.md` に frontmatter 規約（`type` 別必須キーを含む）が確定
-- [ ] `vault/90_meta/markdown-rules.md` に Markdown 制約（標準 MD + Wikilinks のみ、Dataview 禁止、`source` 種別の3部構成強制）が記載
-- [ ] `vault/90_meta/license-notes.md` に Anthropic Usage Policy・docs.claude.com の利用規約整理が記載
+- [x] `vault/` ディレクトリ構造（ページ種別ベース）が作成され、Obsidian Vault として認識される
+- [x] `vault/index.md`, `vault/log.md`, `vault/overview.md` の雛形が配置されている
+- [x] `vault/90_meta/sources.md` に情報源ホワイトリストが確定（Phase 1 では公式 docs.claude.com 系のみ。2026-05-06 に日本語版 `code.claude.com/docs/ja/*` への切替を反映）
+- [x] `vault/90_meta/frontmatter-spec.md` に frontmatter 規約（`type` 別必須キーを含む）が確定
+- [x] `vault/90_meta/markdown-rules.md` に Markdown 制約（標準 MD + Wikilinks のみ、Dataview 禁止、`source` 種別の3部構成強制）が記載（**Phase 2-A の ADR-017 で縮退仕様に superseded**）
+- [x] `vault/90_meta/license-notes.md` に Anthropic Usage Policy・docs.claude.com の利用規約整理が記載
 
 #### Skill と環境非依存ロジック
-- [ ] `.claude/skills/llm-wiki-for-claude-code/SKILL.md` が配置され、Claude Code から認識される
-- [ ] スラッシュコマンド `/wiki-ingest`, `/wiki-regenerate`, `/wiki-lint`（`.claude/commands/` 配下）がローカルで動作する
-- [ ] Skill `hooks/session-start.md` が起動時に `index.md` と `log.md` 直近10件を自動ロードする
-- [ ] `agent/orchestration` の最小実装で `regenerate` ユースケースが冪等動作（意味のある差分のみ出る）
-- [ ] `agent/runners/action` のスタブが配置されている（Phase 3 用）
+- [x] `.claude/skills/llm-wiki-for-claude-code/SKILL.md` が配置され、Claude Code から認識される
+- [x] スラッシュコマンド `/wiki-ingest`, `/wiki-regenerate`, `/wiki-lint`（`.claude/commands/` 配下）がローカルで動作する
+- [x] Skill `hooks/session-start.md` が起動時に `index.md` と `log.md` 直近10件を自動ロードする
+- [x] `agent/orchestration` の最小実装で `regenerate` ユースケースが冪等動作（意味のある差分のみ出る）
+- [x] `agent/runners/action` のスタブが配置されている（Phase 3 用）
 
 #### コンテンツ
-- [ ] `vault/sources/official/hooks/` と `vault/sources/official/cli/` に `type: source` の記事が合計10本生成済み
-- [ ] 全 `source` 記事に必須 frontmatter（`type`, `confidence`, `sources`, `source_url`, `fetched_at`, `claude_code_version`, `status` 等）が揃っている
-- [ ] 全 `source` 記事が「要約 + 公式リンク + 補足」の3部構成を満たしている
-- [ ] `/wiki-lint` 実行で全件 confidence ≥ 0.7、3部構成違反0件、孤立ページ0件
-- [ ] Obsidian で Wikilinks と `[[wikilinks]]` がリンクとして機能する
+- [x] `vault/sources/official/hooks/` と `vault/sources/official/cli/` に `type: source` の記事が合計10本生成済み（hooks 5 + cli 5、Phase 2-A で cli に keybindings 1本追加して計 11 本）
+- [x] 全 `source` 記事に必須 frontmatter（`type`, `confidence`, `sources`, `source_url`, `fetched_at`, `claude_code_version`, `status` 等）が揃っている
+- [x] 全 `source` 記事が「要約 + 公式リンク + 補足」の3部構成を満たしている（**Phase 2-A の ADR-017 で縮退仕様に書換、当受入条件は superseded**）
+- [x] `/wiki-lint` 実行で全件 confidence ≥ 0.7、3部構成違反0件、孤立ページ0件（Phase 1 受入時。Phase 2-A pivot 後は drift 検出 2本を `status: draft` + `stale: true` で扱い、Phase 2-A の縮退仕様適用で解消）
+- [x] Obsidian で Wikilinks と `[[wikilinks]]` がリンクとして機能する
 
 ### Phase 2-A（MVP / pivot 後新規）: 実 LLM 統合 + 公式 source 縮退 + コミュニティ source 1系統 + recipe 種別先行
 
 #### 実 Anthropic SDK 統合
-- [ ] `agent/orchestration/llm.py` がスタブから Anthropic SDK 呼び出しに置換、Sonnet 4.6 既定、prompt caching 有効
-- [ ] `WIKI_LLM_BACKEND=stub|anthropic` の切替フラグ動作
-- [ ] `agent regenerate` の本番運用ガード（CLAUDE.md 注記）が解除されている
+- [x] `agent/orchestration/llm.py` がスタブから実 LLM 呼び出しに置換、Sonnet 4.6 既定、prompt caching 有効（`AnthropicBackend` 側、`ClaudeCodeBackend` 追加で 3 系統）
+- [x] `WIKI_LLM_BACKEND=stub|anthropic|claude-code` の切替フラグ動作（既定は `claude-code`、ADR-018 で確定）
+- [x] `agent regenerate` の本番運用ガード（CLAUDE.md 注記）が解除されている（2026-05-08、ADR-018 / ADR-019 完了に伴い）
 
-#### 公式 source 縮退（既存10本一括処理）
-- [ ] `vault/sources/official/{cli,hooks}/*.md` 10本が縮退仕様（タイトル + 1段落要約 + 公式リンク + AUTO 領域）に書き換え済み
-- [ ] 全10本が `confidence ≥ 0.7`, `status: published`, AUTO マーカー反映済み
-- [ ] 3部構成強制ルール（`vault/90_meta/markdown-rules.md`）が縮退仕様に書き換え済み
-- [ ] drift 記事 2本（`cli/installation.md`, `hooks/overview.md`）が縮退仕様適用で drift 解消
-- [ ] 公式 6 カテゴリ展開（旧計画の 4 カテゴリ × 5本追加）は **撤回**
+#### 公式 source 縮退（既存10本 → 11本一括処理）
+- [x] `vault/sources/official/{cli,hooks}/*.md` 11本（cli 6 + hooks 5）が縮退仕様（タイトル + 1段落要約 + 公式リンク + AUTO 領域）に書き換え済み
+- [x] 全11本が `confidence ≥ 0.7`, `status: published`, AUTO マーカー反映済み
+- [x] 3部構成強制ルール（`vault/90_meta/markdown-rules.md`）が縮退仕様に書き換え済み（ADR-017）
+- [x] drift 記事 2本（`cli/installation.md`, `hooks/overview.md`）が縮退仕様適用で drift 解消
+- [x] 公式 6 カテゴリ展開（旧計画の 4 カテゴリ × 5本追加）は **撤回**
 
 #### コミュニティ source 1系統取り込み（awesome-claude-code 先行）
-- [ ] `vault/90_meta/sources.md` のホワイトリストに `awesome-claude-code` が追加済み
-- [ ] `vault/sources/community/awesome-claude-code/` 配下に最低 5本の `type: source` 記事
-- [ ] `vault/90_meta/license-notes.md` に awesome-claude-code のライセンス整理記載
+- [ ] ~~`vault/90_meta/sources.md` のホワイトリストに `awesome-claude-code` が追加済み~~ → **A-7 中止条件発動（2026-05-08）**: ライセンスが CC BY-NC-ND 4.0 と判明し A-3 を停止、`enabled: false` 設定。Phase 2-B B-3 で別系統に切替予定（fetcher 実装は流用可能な状態で残置）
+- [ ] ~~`vault/sources/community/awesome-claude-code/` 配下に最低 5本の `type: source` 記事~~ → **同上、Phase 2-B 送り**
+- [x] `vault/90_meta/license-notes.md` に awesome-claude-code のライセンス整理記載（CC BY-NC-ND 検出を含む）
 
 #### recipe 種別先行検証
-- [ ] `vault/90_meta/frontmatter-spec.md` に `recipe` 種別の必須キー追加（共通 + `use_case`, `sources` ≥ 2 件）
-- [ ] `vault/90_meta/_schemas/frontmatter.schema.json` に `recipe` 分岐追加
-- [ ] `.claude/skills/llm-wiki-for-claude-code/references/page-templates.md` に recipe テンプレート追加
-- [ ] `vault/recipes/` 配下に **5本以上** 配置、全て `confidence ≥ 0.7`, `status: published`, `citation_validator` PASS
+- [x] `vault/90_meta/frontmatter-spec.md` に `recipe` 種別の必須キー追加（共通 + `use_case`, `sources` ≥ 2 件）
+- [x] `vault/90_meta/_schemas/frontmatter.schema.json` に `recipe` 分岐追加
+- [x] `.claude/skills/llm-wiki-for-claude-code/references/page-templates.md` に recipe テンプレート追加
+- [x] `vault/recipes/` 配下に **5本** 配置（claude-code-setup / hooks-introduction / permission-control-practice / post-tool-use-formatter / keybindings-customization）、全て `confidence ≥ 0.7`, `status: published`, `citation_validator` PASS
 
 #### AUTO マーカー（最小実装）
-- [ ] AUTO セクションマーカー仕様（`<!-- AUTO:START --> ... <!-- AUTO:END -->`）が `vault/90_meta/auto-marker-spec.md` に確定
-- [ ] `agent/writers/markdown_writer.py` に AUTO 領域抽出 + 領域外バイト一致保持ロジック実装
-- [ ] 公式 source 10本 + recipe 5本 = 15本に AUTO 領域導入、領域外バイト一致保持テスト PASS
+- [x] AUTO セクションマーカー仕様（`<!-- AUTO:START --> ... <!-- AUTO:END -->`）が `vault/90_meta/auto-marker-spec.md` に確定（ADR-015）
+- [x] `agent/writers/markdown_writer.py` に AUTO 領域抽出 + 領域外バイト一致保持ロジック実装（`extract_auto_regions` / `replace_auto_regions`）
+- [x] 公式 source 11本 + recipe 5本 = 16本に AUTO 領域導入、領域外バイト一致保持テスト PASS（テスト総数 159 件 PASS）
 
 #### 運用実測
-- [ ] `vault/90_meta/metrics.md` に Phase 2-A の全記事計測値（記事パス、レビュー時間、修正件数）が記録
-- [ ] 修正率が算出され、Phase 2-B 着手判断の材料になる
+- [x] `vault/90_meta/metrics.md` に Phase 2-A の全記事計測値（記事パス、レビュー時間、修正件数）が記録（対象 16 本）
+- [x] 修正率が算出され、Phase 2-B 着手判断の材料になる
 
 ### Phase 2-B（pivot 後新規）: 派生ページ本格化 + コミュニティ拡張 + Claude エコシステム拡張
 
@@ -531,3 +533,4 @@ wiki-for-claude-code/
   - Phase 2 を **A（MVP）/ B（拡張）に分割**。コミュニティ source 取り込み（awesome-claude-code 先行）と実 LLM 統合を Phase 2-A に前倒し
   - 公式 6 カテゴリ展開（旧機能 5）と drift 記事 2 本の全面書き直し（旧機能 1）を撤回
   - 詳細な実装計画は plan ファイル `~/.claude/plans/synchronous-tickling-dragon.md` を参照
+- 2026-05-08: **Phase 2-A 実 LLM 統合の主要マイルストーン完了**。`AnthropicBackend` に加え `ClaudeCodeBackend`（Max プラン経由）を追加し、empirical PASS 後に既定を `claude-code` に昇格（ADR-018）。AUTO 領域は実 LLM 経由で再生成され、AUTO 外の人手編集は保護される（ADR-019）。`CLAUDE.md` の本番運用ガード注記を解除、`metrics.md` に対象 16 本の運用記録追加。詳細は `docs/ideas/20260508-claude-code-llm-backend.md` を参照。
