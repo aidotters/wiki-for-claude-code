@@ -12,7 +12,10 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+import time
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agent.errors import (
@@ -62,6 +65,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_regen = sub.add_parser("regenerate", help="既存ページの再生成")
     p_regen.add_argument("--target", required=True, type=Path)
+    p_regen.add_argument(
+        "--force",
+        action="store_true",
+        help="content_hash 一致時も LLM を強制呼び出し（empirical 検証 / 手動再生成用）",
+    )
 
     p_lint = sub.add_parser("lint", help="lint 検査")
     p_lint.add_argument("--all", action="store_true")
@@ -114,8 +122,10 @@ def _cmd_ingest(args: argparse.Namespace, vault_root: Path) -> int:
 def _cmd_regenerate(args: argparse.Namespace, vault_root: Path) -> int:
     from agent.orchestration.regenerate import regenerate_source
 
+    backend = os.environ.get("WIKI_LLM_BACKEND", "stub")
+    started = time.perf_counter()
     try:
-        result = regenerate_source(args.target, vault_root=vault_root)
+        result = regenerate_source(args.target, vault_root=vault_root, force=args.force)
     except FileNotFoundError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return EXIT_VALIDATION
@@ -132,8 +142,18 @@ def _cmd_regenerate(args: argparse.Namespace, vault_root: Path) -> int:
         print(f"ERROR: {e}", file=sys.stderr)
         return EXIT_LLM
 
+    elapsed = time.perf_counter() - started
     state = "updated" if result.write_result.changed else "no changes"
     print(f"Regenerated: {result.article_path} ({state})")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    try:
+        rel_path = result.article_path.relative_to(vault_root.resolve())
+    except ValueError:
+        rel_path = result.article_path
+    print(
+        f"| {today} | {rel_path} | {backend} | {elapsed:.2f}s | N/A | 0 |",
+        file=sys.stderr,
+    )
     return EXIT_OK
 
 

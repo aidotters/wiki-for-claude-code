@@ -14,16 +14,17 @@ LLM エージェントが週次で公式ドキュメントと英語コミュニ�
 
 **ソース系統:**
 
-1. **公式ドキュメントの整理版**（日本語）— 「要約 + 公式リンク + 補足ノート」の3部構造（Anthropic Usage Policy / 著作権リスク回避のため、全文翻訳ではない）
-2. **英語コミュニティ知見の日本語化** — awesome-claude-code 系、anthropics/claude-code Releases、Anthropic ブログ等の知見を翻訳・整理（Phase 3 から）
+1. **公式ドキュメントの整理版**（日本語）— Phase 2-A から **縮退仕様**（タイトル + 1 段落要約 + 公式日本語版へのリンク + AUTO 領域）を採用（ADR-017、旧 ADR-003 の 3 部構造を superseded）。Anthropic Usage Policy 遵守のため全文転載は禁止
+2. **コミュニティ知見の日本語化** — Phase 2-A は awesome-claude-code 1 系統で着手したが CC BY-NC-ND 4.0 と判明し A-3 中止（ADR-016 の中止条件発動）。Phase 2-B B-3 で別系統（permissive license のリスト）に切替予定
 
-**ページ種別:**
+**ページ種別（6 種別）:**
 
-- `source` — 取込み元の要約（Phase 1）
-- `concept` — 複数 source 横断の概念（Phase 2）
-- `entity` — ツール・コマンド・人物（Phase 2）
+- `source` — 取込み元の要約（Phase 1〜、Phase 2-A から縮退仕様）
+- `recipe` — ユースケース別の実用ドキュメント（Phase 2-A から先行投入、ADR-016 pivot）。`use_case` 必須、`sources` 最低 2 件
+- `concept` — 複数 source 横断の概念（Phase 2-B から本格実装）
+- `entity` — ツール・コマンド・人物（Phase 2-B から本格実装）
+- `synthesis` — `/wiki-query` の結果保存（Phase 2-B から）
 - `comparison` — 競合アプローチ比較（Phase 3 自動生成）
-- `synthesis` — `/wiki-query` の結果保存（Phase 2）
 
 ### 現在のステータス
 
@@ -31,15 +32,16 @@ LLM エージェントが週次で公式ドキュメントと英語コミュニ�
 - **設計の単一情報源**: `docs/ideas/20260505-llm-wiki-for-claude-code.md`
 - 実装言語・フレームワークは未確定（Phase 1 着手時に決定）
 
-### 実装ロードマップ（3 Phase × 2軸）
+### 実装ロードマップ（Phase 1 / 2-A / 2-B / 3）
 
-ページ種別軸（コンパイル深度）と対象ソース軸（カバレッジ）の2軸で段階展開する。
+Phase 2 は ADR-016（2026-05-06）で 2-A（MVP）/ 2-B（拡張）に分割。ページ種別軸（コンパイル深度）と対象ソース軸（カバレッジ）の 2 軸で段階展開する。
 
 | Phase | ページ種別軸 | 対象ソース軸 | 動作確認 |
 |-------|------------|------------|---------|
-| 1 | `source` のみ | 公式・hooks/cli の2カテゴリ | 規約準拠 source 記事10本、スラッシュコマンド `/wiki-ingest` `/wiki-regenerate` `/wiki-lint` 動作、冪等性確認 |
-| 2 | `+ concept` `+ entity` `+ synthesis` | 公式の全6カテゴリ | 派生ページ各最低5本、AUTO マーカー領域分離、`/wiki-query` 動作 |
-| 3 | `+ comparison`（自動生成） | 公式 + コミュニティ ホワイトリスト | 4週連続自動 PR、修正率30%以下、月次運用3ヶ月 |
+| 1 | `source` のみ | 公式・hooks/cli の 2 カテゴリ | 規約準拠 source 記事 10 本、スラッシュコマンド `/wiki-ingest` `/wiki-regenerate` `/wiki-lint` 動作、冪等性確認 |
+| 2-A | `+ recipe` を先行投入、`source` を縮退仕様（ADR-017）に書換 | 公式 hooks/cli の縮退 + コミュニティ 1 系統取込み（A-3 は A-7 中止条件発動で停止） | 実 Anthropic SDK 統合、AUTO マーカー最小実装、recipe 5 本、metrics 計測開始 |
+| 2-B | `+ concept` `+ entity` `+ synthesis` 本格実装 | 公式の残カテゴリ + コミュニティ別系統（B-3 で再選定） | 派生ページ各最低 5 本、AUTO マーカー全展開、`/wiki-query` 動作 |
+| 3 | `+ comparison`（自動生成） | 公式 + コミュニティ ホワイトリスト全系統 | 4 週連続自動 PR、修正率 30% 以下、月次運用 3 ヶ月 |
 
 詳細は `docs/ideas/20260505-llm-wiki-for-claude-code.md` 参照。
 
@@ -60,9 +62,10 @@ LLM エージェントが週次で公式ドキュメントと英語コミュニ�
   - `vault/index.md`: ナビゲーション本体（Rezvani 由来）
   - `vault/log.md`: 全操作の追記専用ログ（Rezvani 由来）
   - `vault/overview.md`: Wiki 全体の高レベル俯瞰
-  - `vault/sources/`: `type=source` 取込み元の要約 + 公式リンク + 補足
+  - `vault/sources/`: `type=source` 取込み元の要約（Phase 2-A から縮退仕様 / ADR-017: タイトル + 1 段落要約 + 公式リンク + AUTO 領域）
     - `vault/sources/official/`: 公式ドキュメント由来（cli, hooks, slash-commands, mcp, settings, sdk）
-    - `vault/sources/community/`: コミュニティ知見由来（tips, workflows, integrations, troubleshooting）— Phase 3 から
+    - `vault/sources/community/`: コミュニティ知見由来 — Phase 2-B B-3 から本格展開（Phase 2-A の awesome-claude-code は CC BY-NC-ND 検出で停止）
+  - `vault/recipes/`: `type=recipe` ユースケース別の実用ドキュメント（Phase 2-A から先行投入 / ADR-016）
   - `vault/concepts/`: `type=concept` 複数 source 横断の概念（Phase 2 から）
   - `vault/entities/`: `type=entity` ツール・コマンド・人物（Phase 2 から）
   - `vault/comparisons/`: `type=comparison` 競合アプローチ比較（Phase 3 で自動生成）
@@ -87,8 +90,8 @@ LLM エージェントが週次で公式ドキュメントと英語コミュニ�
 ### 重要な設計方針
 
 - **Vault = Repo**: Obsidian Vault と Git リポジトリを同一ディレクトリに統合し、同期問題を回避
-- **ページ種別ベースの構造化**: Karpathy 原案の5種別（source / concept / entity / comparison / synthesis）を採用し、1 source から複数の派生ページが育つコンパイル構造を実現
-- **`source` 種別への3部構成強制**: Anthropic Usage Policy / 著作権リスク回避のため、`type: source` のページのみ「要約 + 公式リンク + 日本語補足」3部構成を強制
+- **ページ種別ベースの構造化**: Karpathy 原案の 5 種別（source / concept / entity / comparison / synthesis）に Phase 2-A で `recipe` を加えた **6 種別** を採用し、1 source から複数の派生ページが育つコンパイル構造を実現
+- **`source` 種別への縮退仕様強制**（ADR-017、Phase 2-A から）: Anthropic Usage Policy / 著作権リスク回避のため、`type: source` のページは「タイトル + 1 段落要約（AUTO 領域） + 公式日本語版へのリンク」の縮退 2 セクション構造を強制（旧 ADR-003 の 3 部構成は superseded）
 - **規約先行**: Phase 1 で frontmatter 規約・Markdown 制約・情報源ホワイトリストを確立してから、コンテンツ生成・自動化に進む
 - **3操作 + regenerate**: `/wiki-ingest`, `/wiki-query`, `/wiki-lint`（Karpathy/Rezvani 原案）+ `/wiki-regenerate`（本プロジェクト独自）
 - **信頼度スコア（confidence）**: 全ページに `confidence: 0.0-1.0` 必須化、`/wiki-lint` で 0.5 未満をフラグ
@@ -144,6 +147,16 @@ uv run agent verify-links                    # source_url の HTTP 到達 + 連�
 
 CI: `.github/workflows/validate.yml` で `ruff` / `mypy` / `pytest` / `agent validate --all` を実行。
 `agent verify-links` はネットワーク依存のため CI に含めない（手動 / 別ジョブで実行）。
+
+### Phase 2-A ステータス（2026-05-06 着手）
+
+- **規約・ADR 整備完了**: ADR-015（AUTO マーカー）/ ADR-016（Phase 2 pivot）/ ADR-017（公式 source 縮退仕様）起票、`vault/90_meta/auto-marker-spec.md` および `metrics.md` 新規作成、`frontmatter-spec.md` / `markdown-rules.md` / `sources.md` / `license-notes.md` / JSON Schema を縮退仕様 + recipe 種別対応で改訂
+- **agent 層拡張完了**: `MalformedAutoMarkerError` / `ConfigurationError` / `LLMInvocationError` 新設、`anthropic>=0.40` 依存追加、`markdown_writer.py` に AUTO 領域処理（`extract_auto_regions` / `replace_auto_regions`）、`citation_validator.py` / `frontmatter_validator.py` に recipe 分岐、`orchestration/llm.py` に AnthropicBackend（mock テストで挙動検証、prompt caching 有効）、`fetchers/awesome_claude_code.py` 新設、`orchestration/regenerate.py` に AUTO 領域 noop 経路を追加
+- **コンテンツ生成**: 公式 source 11 本（cli 6 + hooks 5）を縮退仕様に書き換え + AUTO 領域導入、recipe 5 本（claude-code-setup / hooks-introduction / permission-control-practice / post-tool-use-formatter / keybindings-customization）を新規作成
+- **A-7 中止条件発動**: awesome-claude-code が CC BY-NC-ND 4.0 と判明したため A-3 を停止、`vault/90_meta/sources.md` で `enabled: false` 設定。Phase 2-B B-3 で別系統に切替予定（fetcher 実装は流用可能な状態で残置）
+- **テスト件数**: Phase 1 の 107 件 → **159 件 PASS**（目標 130 件超）。`uv run ruff check .` / `uv run mypy agent` / `uv run agent validate --all`（16 本） / `uv run agent lint --all`（違反 0） すべて PASS
+- **未完了（empirical 検証は別セッション）**: `WIKI_LLM_BACKEND=anthropic` 経由の `agent regenerate` 実 API 動作確認、prompt caching 効果計測、Slash Command（`/wiki-ingest`、`/wiki-regenerate`、`/wiki-lint`）のローカル Claude Code からの動作確認は API キー設定の上で別セッションで実施
+- **`agent regenerate` 本番運用ガード**: 実 LLM 統合の empirical 検証完了まで継続維持（`stub` 既定のため stub バックエンドの動作は冪等で安全、`anthropic` 既定への切替は empirical 検証 PASS 後）
 
 ### Phase 1 ステータス（2026-05-06 更新）
 

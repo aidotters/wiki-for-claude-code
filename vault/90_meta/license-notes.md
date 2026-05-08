@@ -5,7 +5,7 @@
 ## 大原則
 
 1. **全文転載禁止**: 取込み元の文章を連続100文字以上そのまま転載しない（`transclusion_validator` で機械検出）
-2. **要約 + リンク + 補足の3部構成のみ許可**: `type: source` ページは「## 概要 (要約)」「## 公式ドキュメント」「## 補足解説 (日本語)」の3セクション必須（ADR-003）
+2. **縮退仕様で許可**: `type: source` ページは「## 概要 (要約)」（AUTO 領域）+「## 公式ドキュメント」の 2 セクション構造（ADR-017 / 旧 ADR-003 を superseded）
 3. **ホワイトリスト外の取込み禁止**: `vault/90_meta/sources.md` に登録されていないソースは取込み拒否
 4. **robots.txt 遵守**: 取込み元の robots.txt で disallow されているパスは取込まない
 5. **レート制限遵守**: 各ソースの `rate_limit` フィールドに従い、`agent/fetchers` が sleep を挿入する
@@ -34,6 +34,40 @@
 - `transclusion_validator` で連続100文字一致を CI で必須チェック
 - `User-Agent` を識別可能な値（例: `llm-wiki-for-claude-code/0.1 (https://github.com/...)`）に設定
 - リクエスト間に最低 100ms（rate_limit に応じて延長）の sleep を入れる
+
+### awesome-claude-code（https://github.com/hesreallyhim/awesome-claude-code）
+
+#### ライセンス検証結果（2026-05-06、Phase 2-A）
+
+> **A-7 中止条件発動**: ライセンスが **CC BY-NC-ND 4.0**（NonCommercial-NoDerivatives）と判明。A-3 タスクは停止し、`vault/sources/community/awesome-claude-code/` への記事生成は **実施しない**。`vault/90_meta/sources.md` の該当エントリは `enabled: false` に設定（コード資産は残すが ingest は禁止）。
+
+検出詳細:
+
+- **取得元**: `https://raw.githubusercontent.com/hesreallyhim/awesome-claude-code/2d32d46e5e946799bff436210d641eca1153ff63/LICENSE`
+- **ライセンス**: `Awesome Claude Code © 2025 by hesreallyhim is licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International`
+- **発見日**: 2026-05-06（Phase 2-A の A-3 着手時点）
+
+#### 不適合の根拠
+
+- **ND (NoDerivatives)**: リスト本体の構造化情報を再構成して要約記事を作る行為は、たとえ翻訳・原文書換でも derivative と見なされうる
+- **NC (NonCommercial)**: 本プロジェクトは公開 Wiki を志向しており、将来的に広告・有料機能・組織用途に展開する可能性を排除しない（NC はそれを禁ずる）
+- **ADR-016 の中止条件**: 「ライセンスが商用利用不可（NC 系）と判明した場合、A-3 を停止し別系統に切替」に直接該当
+
+#### 残存する技術資産
+
+- `agent/fetchers/awesome_claude_code.py`: 実装済み + ユニットテスト 11 件 PASS。Phase 2-B / B-3 で別系統（permissive license のリスト）の取込みに流用可能
+- `agent/orchestration/ingest.py` の `awesome-claude-code` カテゴリパス: 残存。再有効化時はホワイトリストの `enabled` を `true` に戻すのみで動作する想定
+- 本プロジェクトのフロー検証としては fetcher / ホワイトリスト / カテゴリ分岐の各レイヤーが動作することを ユニットテストで担保した
+
+#### Phase 2-B での再計画方針
+
+- 別系統候補（B-3 で検討）:
+  - `github.com/anthropics/anthropic-cookbook`（MIT）
+  - Anthropic 公式エンジニアリング blog（既存ホワイトリスト `anthropic-claude-code-docs-*` の延長）
+  - Karpathy / Rezvani 個人発信（個別ライセンス確認の上）
+- 別系統採用時は本ファイルに新セクションを起こし、ライセンス整理を経てからホワイトリスト追加を行う
+
+### 将来追加候補ソース（旧位置）
 
 ### 将来追加候補ソース
 

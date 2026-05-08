@@ -49,18 +49,17 @@ claude_code_version: "1.5.0"
 reviewer: "tak"
 human_edited: false
 status: draft
-auto_section_managed: false
+auto_section_managed: true
 ---
 
 ## 概要 (要約)
+<!-- AUTO:START purpose=summary-1-paragraph -->
 サンプルフックの概要です。
+<!-- AUTO:END -->
 
 ## 公式ドキュメント
 → {source_url}
 （最終確認: 2026-05-05 / 対象バージョン: 1.5.0）
-
-## 補足解説 (日本語)
-追加の補足解説。
 """
 
 

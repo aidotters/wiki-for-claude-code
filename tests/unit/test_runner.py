@@ -100,6 +100,43 @@ def test_lint_returns_4_when_violations(
     assert code == EXIT_LINT
 
 
+def test_regenerate_logs_elapsed_time_to_stderr(
+    tmp_path: Path,
+    repo_root: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`agent regenerate` 実行時に所要時間が stderr に Markdown 表行で出力される (#23)。"""
+    from agent.orchestration import regenerate as regenerate_module
+    from agent.writers.markdown_writer import WriteResult
+
+    vault = _make_vault(tmp_path, repo_root)
+    article = vault / "sources" / "official" / "cli" / "dummy.md"
+    article.parent.mkdir(parents=True, exist_ok=True)
+    article.write_text("---\ntype: source\n---\nbody\n", encoding="utf-8")
+
+    def _stub_regen(target_path: Path, **kwargs: object) -> regenerate_module.RegenerateResult:
+        return regenerate_module.RegenerateResult(
+            article_path=target_path.resolve(),
+            write_result=WriteResult(
+                file_path=target_path.resolve(),
+                changed=False,
+                diff_summary="stub",
+            ),
+        )
+
+    monkeypatch.setattr(regenerate_module, "regenerate_source", _stub_regen)
+    monkeypatch.setenv("WIKI_LLM_BACKEND", "claude-code")
+
+    code = main(["--vault-root", str(vault), "regenerate", "--target", str(article)])
+    captured = capsys.readouterr()
+    assert code == EXIT_OK
+    assert "claude-code" in captured.err
+    assert "s |" in captured.err
+    # Markdown 表行形式: | date | path | backend | <秒>s | N/A | 0 |
+    assert captured.err.count("|") >= 6
+
+
 def test_validate_returns_1_on_violation(
     tmp_path: Path, repo_root: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

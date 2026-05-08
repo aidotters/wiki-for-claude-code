@@ -27,6 +27,14 @@ sources:
     rate_limit: "1 req/sec"
     license_notes: "2026-05 時点で 301 redirect → code.claude.com/docs/。互換のため維持（ADR 別途）"
     enabled: true
+  - id: awesome-claude-code
+    name: "awesome-claude-code (GitHub コミュニティリスト)"
+    base_url: "https://github.com/hesreallyhim/awesome-claude-code"
+    raw_base_url: "https://raw.githubusercontent.com/hesreallyhim/awesome-claude-code/"
+    fetch_method: http
+    rate_limit: "1 req/sec (GitHub unauth: 60 req/h)"
+    license_notes: "CC BY-NC-ND 4.0 と判明（2026-05-06）。NC-ND のため A-7 中止条件発動、Phase 2-A の A-3 を停止。詳細は [[license-notes]]。Phase 2-B B-3 で別系統に切替予定"
+    enabled: false
 ```
 
 > 2026-05-06 更新: 公式ドキュメントの正式 URL が `https://docs.claude.com/claude-code/*` から
@@ -57,8 +65,9 @@ sources:
 ## Phase 別のソース展開
 
 - **Phase 1**: `anthropic-claude-code-docs-ja`（主）+ `anthropic-claude-code-docs-en`（補完）+ `anthropic-claude-docs-legacy`（リダイレクト追跡）
-- **Phase 2**: 公式 Anthropic ブログ（必要に応じて）
-- **Phase 3**: GitHub Releases（`anthropics/claude-code`）、awesome-claude-code 系ホワイトリスト
+- **Phase 2-A**: 上記 + `awesome-claude-code`（コミュニティリスト 1 系統先行、ADR-016 pivot）
+- **Phase 2-B**: 公式 Anthropic ブログ、Anthropic Releases（必要に応じて）
+- **Phase 3**: GitHub Releases（`anthropics/claude-code`）、Karpathy/Rezvani 等の個人発信、X/Reddit（要規約再検討）
 
 ## ホワイトリスト外の取込み禁止
 

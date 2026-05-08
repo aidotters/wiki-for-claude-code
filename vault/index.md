@@ -22,19 +22,22 @@
 
 #### コミュニティ知見
 
-- （Phase 3 で展開）
+- **awesome-claude-code**: （Phase 2-A で 5 本以上を取込み予定）
 
 ### 派生ページ
 
-- **Concepts**: （Phase 2 で展開）
-- **Entities**: （Phase 2 で展開）
+- **Recipes**（Phase 2-A 先行）: [[recipes/claude-code-setup]], [[recipes/hooks-introduction]], [[recipes/permission-control-practice]], [[recipes/post-tool-use-formatter]], [[recipes/keybindings-customization]]
+- **Concepts**: （Phase 2-B で展開）
+- **Entities**: （Phase 2-B で展開）
 - **Comparisons**: （Phase 3 で自動生成）
-- **Syntheses**: （Phase 2 で `/wiki-query` 結果を保存）
+- **Syntheses**: （Phase 2-B で `/wiki-query` 結果を保存）
 
 ## 規約・運用
 
 - [[90_meta/frontmatter-spec]] — frontmatter 規約
 - [[90_meta/markdown-rules]] — Markdown 制約
+- [[90_meta/auto-marker-spec]] — AUTO セクションマーカー仕様（Phase 2-A）
 - [[90_meta/sources]] — 情報源ホワイトリスト
 - [[90_meta/license-notes]] — 著作権・利用規約整理
 - [[90_meta/lint-rules]] — `/wiki-lint` の検出項目
+- [[90_meta/metrics]] — レビュー実績・修正率記録（Phase 2-A）

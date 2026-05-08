@@ -33,14 +33,37 @@ def test_missing_official_doc_fails() -> None:
     assert any("公式ドキュメント" in i.message for i in issues)
 
 
-def test_missing_supplement_fails() -> None:
+def test_supplement_no_longer_required() -> None:
+    """ADR-017: 補足解説セクションは撤廃された（旧 ADR-003 superseded）。"""
     body = (
         "\n## 概要 (要約)\nx\n\n"
         "## 公式ドキュメント\n→ https://docs.claude.com/x\n"
         "（最終確認: 2026-05-05 / 対象バージョン: 1.5.0）\n"
     )
-    issues = validate_body(body)
-    assert any("補足解説" in i.message for i in issues)
+    assert validate_body(body) == []
+
+
+def test_auto_section_managed_requires_auto_region() -> None:
+    """auto_section_managed=true は AUTO 領域必須（ADR-015 / ADR-017）。"""
+    body_without_auto = (
+        "\n## 概要 (要約)\nx\n\n"
+        "## 公式ドキュメント\n→ https://docs.claude.com/x\n"
+        "（最終確認: 2026-05-05 / 対象バージョン: 1.5.0）\n"
+    )
+    issues = validate_body(body_without_auto, auto_section_managed=True)
+    assert any("AUTO" in i.message for i in issues)
+
+
+def test_auto_section_managed_with_region_passes() -> None:
+    body_with_auto = (
+        "\n## 概要 (要約)\n"
+        "<!-- AUTO:START -->\n"
+        "x\n"
+        "<!-- AUTO:END -->\n\n"
+        "## 公式ドキュメント\n→ https://docs.claude.com/x\n"
+        "（最終確認: 2026-05-05 / 対象バージョン: 1.5.0）\n"
+    )
+    assert validate_body(body_with_auto, auto_section_managed=True) == []
 
 
 def test_official_link_format_missing_url() -> None:

@@ -1,27 +1,34 @@
 # LLM-Wiki for Claude Code
 
 > 作成日: 2026-05-05
-> ステータス: verified（Phase 1 完了 / 検証日: 2026-05-06）
+> ステータス: verified（Phase 1 完了 / 検証日: 2026-05-06） / **Phase 2 以降は pivot を反映**（2026-05-06）
 > 優先度: 未定
+> 関連 plan: `~/.claude/plans/synchronous-tickling-dragon.md`（Phase 2 pivot 提案）
 
 ## 概要
 
-Andrej Karpathy 氏が提唱した「LLM-Wiki」のコンセプトを Claude Code というドメインに適用した、人間と LLM が共同で読み書きする日本語 Wiki。LLM エージェントが週次で公式ドキュメントと英語コミュニティ知見を取得・整理し、人間レビューを経てマージすることで、Claude Code の最新セットアップ・使い方を継続的に参照できる場を提供する。
+Andrej Karpathy 氏が提唱した「LLM-Wiki」のコンセプトを **Claude エコシステム**（Claude Code を中核に、Claude Design / Skills / Agent SDK 等を含む）というドメインに適用した、人間と LLM が共同で読み書きする日本語 Wiki。LLM エージェントが定期的に **コミュニティに散らばる実践知（英語コミュニティ + 個人発信）** を取得・整理し、横断視点で再構成（ユースケース別 Tips / セットアップ手順 / チートシート等）したものを人間レビューを経てマージすることで、Claude エコシステム最新の使い方・実践知を継続的に参照できる場を提供する。
+
+> **pivot 経緯（2026-05-06）**: 当初は「公式英語ドキュメントの日本語素訳 + 補足」を主軸としていたが、Phase 1 受入れテスト時に **公式日本語版（`code.claude.com/docs/ja/*`）の存在が確認** され、素訳の付加価値が毀損された。本来の付加価値は「コミュニティ実践知の自動整理 + 横断視点での再構成」にあると再定義し、公式 source は縮退仕様に変更、コミュニティ source 取り込みを Phase 2 に前倒し、ユースケース別 `recipe` 種別を Phase 2-A で先行検証する方針に転換した。詳細は plan ファイル `~/.claude/plans/synchronous-tickling-dragon.md` を参照。
 
 ## 背景
 
 ### 現状の課題
 
-- **公式ドキュメントの追従困難**: Claude Code は機能追加・変更が早く、公式ドキュメント（code.claude.com/docs/ja, code.claude.com/docs/en）も断片化しがちで、全体像を把握しづらい。
-- **英語コミュニティ知見の言語障壁**: Reddit, GitHub Discussions, awesome-claude-code 系リポジトリ、Anthropic ブログ、X など、有用な実践ノウハウは英語コミュニティが圧倒的に早い・多いが、日本語話者には届きにくい。
+- **コミュニティ実践知の追従困難**: Reddit, GitHub Discussions, awesome-claude-code 系リポジトリ、Anthropic ブログ、X、Karpathy/Rezvani 等の個人発信に有用な実践ノウハウが圧倒的に早く・多く流れるが、量が多く・多角的で、個人が継続的に追いきるのは困難。
+- **英語コミュニティ知見の言語障壁**: 上記の有用情報は英語コミュニティが中心で、日本語話者には届きにくい。
+- **公式リファレンスとユースケースのギャップ**: `code.claude.com/docs/ja/*` の公式日本語ドキュメントはフラットなリファレンス構造で、「初期セットアップ手順」「ユースケース別 Tips」「機能横断のチートシート」といった目的志向の構成が存在しない。
 - **既存日本語情報の陳腐化**: 個人ブログや Zenn/Qiita 記事は単発で更新されにくく、半年経つと内容が古くなる。
-- **LLM が参照可能な構造化情報の不足**: ユーザーが Claude Code 自身に「最新の hooks 仕様は？」と聞いたとき、信頼できる構造化された一次資料に近いソースが少ない。
+- **LLM が参照可能な構造化情報の不足**: ユーザーが Claude 自身に「最新の hooks 仕様は？」「Claude Code で X するレシピは？」と聞いたとき、横断視点で構造化された情報が少なく、回答品質が安定しない。
+- **(pivot 前の前提だった課題、現在は解決済み)** ~~公式ドキュメントは英語のみで日本語素訳の付加価値があった~~ → 公式日本語版（`code.claude.com/docs/ja/*`）の存在を 2026-05-06 に確認、素訳の付加価値は無効化された。
 
 ### 解決したいこと
 
-- Claude Code の使い方・設定・周辺ツール（hooks, MCP, slash-commands, settings, SDK 等）を**日本語で**継続的に参照できる Wiki を構築する。
-- LLM エージェントによる週次自動更新で「常に最新」を担保する（人間レビュー必須）。
-- 人間も LLM も読みやすい構造（プレーン Markdown + Wikilinks）で、将来的に LLM のコンテキストに直接投入できる素材として再利用可能にする。
+- **Claude エコシステム**（Claude Code + Claude Design + Skills + Agent SDK 等）における **コミュニティ実践知の自動整理 + 横断視点での再構成** を、日本語で継続的に参照できる Wiki として構築する。
+- LLM エージェントによる定期更新で「常に最新」を担保する（人間レビュー必須）。
+- 公式リファレンスにない **目的志向のドキュメント**（ユースケース別 Tips = `recipe`、セットアップ手順 = `guide`、機能横断のチートシート = `cheatsheet`）を派生種別として整備する。
+- 人間も LLM も読みやすい構造（プレーン Markdown + Wikilinks）で、Claude に質問した際に引かれる構造化インデックス（A-3 用途）も同時充足する。
+- 公式 source は **縮退仕様**（タイトル + 1 段落要約 + 公式リンク + AUTO マーカー）として「公式へのインデックス」役に徹し、付加価値は派生ページ（concept / entity / synthesis / recipe / guide / cheatsheet / comparison）に集中投下する。
 
 ## 解決策
 
@@ -50,20 +57,28 @@ Karpathy gist は Wiki を以下の **3つのレイヤー** に分離する設�
 | 著作権配慮 | 言及なし | Anthropic Usage Policy 遵守のため `source` 種別に「要約 + リンク + 補足」3部構成を強制 |
 | 自動化 | 個人の手動 ingest が中心 | GitHub Actions による週次自動更新を前提（Phase 3） |
 
-#### コンテンツの2系統 × ページ5種別
+#### コンテンツの2系統 × ページ種別（pivot 後: 5種別 → **8種別**）
 
-ソース系統（公式 / コミュニティ）とページ種別（5種類）の2軸で分類する:
+ソース系統（公式 / コミュニティ）とページ種別（pivot 後 8 種類）の2軸で分類する:
 
-- **ソース系統**: 公式ドキュメント由来 / コミュニティ知見由来（カテゴリ細分は `tags` で表現）
-- **ページ種別**: `source`（取込み元の要約）/ `concept`（複数 source 横断の概念）/ `entity`（ツール・コマンド・人物）/ `comparison`（競合アプローチ比較）/ `synthesis`（クエリ結果の保存）
+- **ソース系統**: 公式ドキュメント由来（縮退仕様）/ コミュニティ知見由来（Phase 2-A から本格導入）
+- **ページ種別**:
+  - `source`（取込み元の要約 / pivot 後は **縮退仕様** = タイトル + 1段落要約 + 公式リンク + AUTO マーカー）
+  - `concept`（複数 source 横断の概念）
+  - `entity`（ツール・コマンド・人物・モデル・機能）
+  - `comparison`（競合アプローチ比較 / Phase 3 で自動生成）
+  - `synthesis`（`/wiki-query` 結果の保存）
+  - **`recipe`（ユースケース別 Tips 集 / Phase 2-A で先行導入）**
+  - **`guide`（ハウツー / セットアップ手順 / Phase 2-B 以降）**
+  - **`cheatsheet`（機能横断のチートシート / Phase 3 以降）**
 
-この2軸設計により、「公式ドキュメントの単純な日本語化」を超え、複数 source を横断する `concept` ページや `comparison` ページが派生して育つ「コンパイル型 Wiki」になる。
+この2軸設計により、「公式ドキュメントの単純な日本語化」ではなく、**コミュニティ実践知 × 横断視点の派生ページ群**（特に `recipe` / `guide` / `cheatsheet`）が Wiki の本体価値を担う構造になる。`source` は派生ページの引用先 / 公式へのインデックスとしての役割に絞る。
 
 ### 設計方針
 
 1. **Vault = Repo**: Obsidian Vault と Git リポジトリを同一ディレクトリに統合。同期問題を排除する。
-2. **ページ種別ベースの構造化**: Karpathy 原案の5種別（source / concept / entity / comparison / synthesis）を採用し、1 source から複数の派生ページが育つコンパイル構造を実現。
-3. **`source` 種別への3部構成強制**: Anthropic Usage Policy / 著作権リスク回避のため、`type: source` のページのみ「要約 + 公式リンク + 日本語補足」3部構成を強制。派生ページ（concept 等）は引用さえあれば独自解説として成立。
+2. **ページ種別ベースの構造化**: Karpathy 原案の5種別（source / concept / entity / comparison / synthesis）に加え、pivot 後は **目的志向の派生種別**（`recipe` / `guide` / `cheatsheet`）を追加。1 source から複数の派生ページが育つコンパイル構造に、ユースケース別の実用ドキュメントを織り込む。
+3. **`source` 種別の縮退仕様**（pivot 後改訂）: Anthropic Usage Policy / 公式日本語版との重複回避のため、`type: source` のページは **「タイトル + 1 段落要約 + 公式リンク + AUTO マーカー」** に縮退。AUTO 領域は自動メンテし、人手が独自価値を付加する場合は派生ページ（`concept` / `recipe` 等）を新設して引用形式で記述する。
 4. **規約先行**: Phase 1 で frontmatter 規約・Markdown 制約・情報源ホワイトリスト・利用規約整理を確立してから、コンテンツ生成・自動化に進む。
 5. **3操作 + 再生成**: Karpathy/Rezvani の `ingest` / `query` / `lint` に加えて、本プロジェクト独自の `regenerate`（既存 source の再フェッチと派生ページ更新提案）を Phase 1 から実装する。
 6. **AUTO セクションマーカー**: 自動生成領域（`<!-- AUTO:START --> ... <!-- AUTO:END -->`）と人手編集領域を明示的に分離。自動 PR が人手編集を上書きする事故を防ぐ（Phase 2 で導入）。
@@ -87,21 +102,23 @@ Karpathy gist は Wiki を以下の **3つのレイヤー** に分離する設�
 
 ## 実装する機能
 
-### ロードマップ（2軸の段階的開発）
+### ロードマップ（2軸の段階的開発 / pivot 後改訂）
 
-「ページ種別軸（コンパイル深度）」と「対象ソース軸（カバレッジ）」の2軸で段階的に拡張する:
+「ページ種別軸（コンパイル深度）」と「対象ソース軸（カバレッジ）」の2軸で段階的に拡張する。**Phase 2 は pivot により A/B 分割**:
 
 | Phase | ページ種別軸 | 対象ソース軸 | 主な追加機能 |
 |-------|------------|------------|-----------|
-| **1** | `source` のみ | **公式のみ・hooks/cli の2カテゴリ** | 規約確立、Skill 雛形、ingest / lint / regenerate 操作、手動記事化10本 |
-| **2** | `+ concept`, `+ entity`, `+ synthesis` | **公式の全6カテゴリ**（cli/hooks/slash-commands/mcp/settings/sdk）。コミュニティ未着手 | AUTO マーカー導入、query 操作、派生ページ手動生成、レビュー工数実測 |
-| **3** | `+ comparison`（自動生成） | **公式 + コミュニティ ホワイトリスト**（Anthropic blog RSS、anthropics/claude-code Releases、awesome-claude-code 等） | GitHub Actions 週次 cron、自動 PR、コミュニティ source 拡張 |
+| **1** | `source` のみ | 公式 hooks/cli の2カテゴリ | 規約確立、Skill 雛形、ingest / lint / regenerate 操作、手動記事化10本（**pivot 後は縮退仕様で再評価**） |
+| **2-A**（MVP） | `+ recipe`（先行検証 1 種別） | **公式 source 縮退**（既存10本） + **コミュニティ source 1系統**（awesome-claude-code 先行） | 実 Anthropic SDK 統合、AUTO マーカー最小実装、recipe 種別 5本生成、metrics 計測開始 |
+| **2-B** | `+ concept`, `+ entity`, `+ synthesis` | コミュニティソース追加系統（GitHub Releases / Anthropic blog RSS / 個人発信）、Claude エコシステム拡張カテゴリ（claude-design / skills / agent-sdk） | `/wiki-query` 実装、AUTO マーカー全展開、verify-links CI 統合、fetcher 拡張 |
+| **3** | `+ comparison`（自動生成）`+ guide` `+ cheatsheet` | コミュニティホワイトリスト（X/Twitter, Reddit, ブログ等の追加 fetcher 系統） | GitHub Actions 週次 cron、自動 PR、guide / cheatsheet 種別の本格導入、コミュニティ source 大規模展開 |
 
 各 Phase 終了時の動作確認:
 
-- **Phase 1**: `source` 種別記事10本、スラッシュコマンド `/wiki-ingest`, `/wiki-lint`, `/wiki-regenerate`（`.claude/commands/` 配下）がローカルで動作、再生成の冪等性確認
-- **Phase 2**: 派生ページ（concept / entity / synthesis）が育ち、AUTO マーカーで人手編集領域が保護されることを確認
-- **Phase 3**: 4週連続で自動 PR が立ち、人手修正率30%以下、コミュニティ source 取込み実績あり
+- **Phase 1**: `source` 種別記事10本、スラッシュコマンド `/wiki-ingest`, `/wiki-lint`, `/wiki-regenerate`（`.claude/commands/` 配下）がローカルで動作、再生成の冪等性確認 ✅ 2026-05-06 完了
+- **Phase 2-A**: 実 LLM 統合動作、公式 source 10本が縮退仕様で安定、awesome-claude-code から 5本以上の community source 取込み、recipe 種別 5本以上が `published`、metrics に修正率記録
+- **Phase 2-B**: 派生ページ（concept / entity / synthesis）が育ち、AUTO マーカーで人手編集領域が保護されることを確認、`/wiki-query` 動作、Claude エコシステム拡張カテゴリ整備
+- **Phase 3**: 4週連続で自動 PR が立ち、人手修正率30%以下、guide / cheatsheet 整備、コミュニティ source の追加 fetcher 系統運用
 
 ### 機能1: Vault ディレクトリ構造（Phase 1 で確定）
 
@@ -133,15 +150,18 @@ vault/
 └── 90_meta/                   # 情報源リスト、frontmatter 規約、用語集、更新ログ
 ```
 
-### 機能2: ページ種別とテンプレート（Phase 1 で `source`、Phase 2 以降で他種別）
+### 機能2: ページ種別とテンプレート（pivot 後: 8 種別に拡張）
 
-| 種別 | 配置 | 役割 | Anthropic Policy 適合 |
-|------|------|------|---------------------|
-| `source` | `vault/sources/{official,community}/<category>/<slug>.md` | 取込み元の要約 + 公式リンク + 補足 | **3部構成を強制** |
-| `concept` | `vault/concepts/<Name>.md` | 複数 source 横断の概念（例: 「AUTO マーカー」「permission mode」） | 引用必須 |
-| `entity` | `vault/entities/<Name>.md` | ツール・コマンド・人物（例: 「Bash tool」「Skills」「MCP server」） | 引用必須 |
-| `comparison` | `vault/comparisons/<A>-vs-<B>.md` | 競合アプローチ比較（例: 「hooks vs Skills」） | 引用必須 |
-| `synthesis` | `vault/syntheses/<topic>.md` | `/wiki-query` の結果保存 | 引用必須 |
+| 種別 | 配置 | 役割 | Anthropic Policy 適合 | 導入 Phase |
+|------|------|------|---------------------|----------|
+| `source` | `vault/sources/{official,community}/<category>/<slug>.md` | **縮退仕様**: タイトル + 1段落要約 + 公式リンク + AUTO マーカー（pivot 後改訂） | AUTO 領域は引用形式を遵守 | 1（公式）/ 2-A（コミュニティ） |
+| `concept` | `vault/concepts/<Name>.md` | 複数 source 横断の概念（例: 「AUTO マーカー」「permission mode」） | 引用必須 | 2-B |
+| `entity` | `vault/entities/<Name>.md` | ツール・コマンド・人物・モデル・機能（例: 「Bash tool」「Skills」「MCP server」「Claude Design」） | 引用必須 | 2-B |
+| `comparison` | `vault/comparisons/<A>-vs-<B>.md` | 競合アプローチ比較（例: 「hooks vs Skills」） | 引用必須 | 3（自動生成） |
+| `synthesis` | `vault/syntheses/<topic>.md` | `/wiki-query` の結果保存 | 引用必須 | 2-B |
+| **`recipe`** | `vault/recipes/<use-case>.md` | **ユースケース別 Tips 集**（例: 「Claude Code セットアップ」「Hooks 入門」「MCP 連携 Tips」） | 引用必須（`sources` ≥ 2 件） | **2-A**（先行検証） |
+| **`guide`** | `vault/guides/<topic>.md` | **ハウツー / 手順書**（recipe より系統的、初心者向け） | 引用必須 | 2-B 〜 3 |
+| **`cheatsheet`** | `vault/cheatsheets/<topic>.md` | **機能横断のチートシート**（キーボードショートカット一覧、コマンド一覧、設定キー一覧等） | 引用必須 | 3 |
 
 ### 機能3: frontmatter 規約（Phase 1 で確定）
 
@@ -172,22 +192,25 @@ auto_section_managed: false  # Phase 2 で AUTO マーカー導入時に true �
 ---
 ```
 
-### 機能4: `source` 種別の3部構成（Phase 1 で確定、Anthropic Policy 対応）
+### 機能4: `source` 種別の構成（pivot 後: **縮退仕様**）
 
-`type: source` のページのみ、以下の3部構成を強制:
+Phase 1 では「要約 + 公式リンク + 補足解説」3部構成を強制していたが、**公式日本語版（`code.claude.com/docs/ja/*`）の存在確認（2026-05-06）により、補足解説の付加価値が薄くなった**。pivot 後は以下の縮退仕様に変更:
 
 ```markdown
 ## 概要 (要約)
-（公式の核となるポイントを日本語で要約。3-5文程度）
+<!-- AUTO:START -->
+（タイトル + 1段落要約 = 公式ページの主旨を1段落で示す。AUTO マーカーで自動メンテ）
+<!-- AUTO:END -->
 
 ## 公式ドキュメント
-→ {公式 URL}（最終確認: YYYY-MM-DD / 対象バージョン: X.Y.Z）
-
-## 補足解説 (日本語)
-（実際の利用例、ハマりどころ、関連機能との関係など、独自価値の追加）
+→ {公式日本語 URL}（最終確認: YYYY-MM-DD / 対象バージョン: X.Y.Z）
 ```
 
-派生ページ（concept / entity 等）は引用さえあれば独自解説として自由に構成できる。これで法務リスクは `source` ページに局所化される。
+**3部構成の「補足解説」は廃止**。実際の利用例・ハマりどころ・横断視点の解説は **派生種別（`concept` / `recipe` / `guide` 等）に新ページとして起こし、`source` を引用元として参照する** 形に変更する。これにより:
+
+- `source` は「公式へのインデックス」役に徹する → ハルシネーション混入面が縮小
+- 付加価値は派生ページに集中 → 公式リファレンスにない目的志向ドキュメント（recipe / guide / cheatsheet）が Wiki の本体価値に
+- 法務リスクは引用形式の派生ページで自然に局所化（全文転載の余地なし）
 
 ### 機能5: Slash Command + Skill 構造（Phase 1 で雛形、Phase 2/3 で機能追加）
 
@@ -287,24 +310,59 @@ agent/
 - [ ] `/wiki-lint` 実行で全件 confidence ≥ 0.7、3部構成違反0件、孤立ページ0件
 - [ ] Obsidian で Wikilinks と `[[wikilinks]]` がリンクとして機能する
 
-### Phase 2: 派生ページ追加 + AUTO マーカー + 公式全6カテゴリ展開
+### Phase 2-A（MVP / pivot 後新規）: 実 LLM 統合 + 公式 source 縮退 + コミュニティ source 1系統 + recipe 種別先行
+
+#### 実 Anthropic SDK 統合
+- [ ] `agent/orchestration/llm.py` がスタブから Anthropic SDK 呼び出しに置換、Sonnet 4.6 既定、prompt caching 有効
+- [ ] `WIKI_LLM_BACKEND=stub|anthropic` の切替フラグ動作
+- [ ] `agent regenerate` の本番運用ガード（CLAUDE.md 注記）が解除されている
+
+#### 公式 source 縮退（既存10本一括処理）
+- [ ] `vault/sources/official/{cli,hooks}/*.md` 10本が縮退仕様（タイトル + 1段落要約 + 公式リンク + AUTO 領域）に書き換え済み
+- [ ] 全10本が `confidence ≥ 0.7`, `status: published`, AUTO マーカー反映済み
+- [ ] 3部構成強制ルール（`vault/90_meta/markdown-rules.md`）が縮退仕様に書き換え済み
+- [ ] drift 記事 2本（`cli/installation.md`, `hooks/overview.md`）が縮退仕様適用で drift 解消
+- [ ] 公式 6 カテゴリ展開（旧計画の 4 カテゴリ × 5本追加）は **撤回**
+
+#### コミュニティ source 1系統取り込み（awesome-claude-code 先行）
+- [ ] `vault/90_meta/sources.md` のホワイトリストに `awesome-claude-code` が追加済み
+- [ ] `vault/sources/community/awesome-claude-code/` 配下に最低 5本の `type: source` 記事
+- [ ] `vault/90_meta/license-notes.md` に awesome-claude-code のライセンス整理記載
+
+#### recipe 種別先行検証
+- [ ] `vault/90_meta/frontmatter-spec.md` に `recipe` 種別の必須キー追加（共通 + `use_case`, `sources` ≥ 2 件）
+- [ ] `vault/90_meta/_schemas/frontmatter.schema.json` に `recipe` 分岐追加
+- [ ] `.claude/skills/llm-wiki-for-claude-code/references/page-templates.md` に recipe テンプレート追加
+- [ ] `vault/recipes/` 配下に **5本以上** 配置、全て `confidence ≥ 0.7`, `status: published`, `citation_validator` PASS
+
+#### AUTO マーカー（最小実装）
+- [ ] AUTO セクションマーカー仕様（`<!-- AUTO:START --> ... <!-- AUTO:END -->`）が `vault/90_meta/auto-marker-spec.md` に確定
+- [ ] `agent/writers/markdown_writer.py` に AUTO 領域抽出 + 領域外バイト一致保持ロジック実装
+- [ ] 公式 source 10本 + recipe 5本 = 15本に AUTO 領域導入、領域外バイト一致保持テスト PASS
+
+#### 運用実測
+- [ ] `vault/90_meta/metrics.md` に Phase 2-A の全記事計測値（記事パス、レビュー時間、修正件数）が記録
+- [ ] 修正率が算出され、Phase 2-B 着手判断の材料になる
+
+### Phase 2-B（pivot 後新規）: 派生ページ本格化 + コミュニティ拡張 + Claude エコシステム拡張
 
 #### ページ種別の拡張
 - [ ] `vault/concepts/` に `type: concept` ページが最低5本（複数 source を引用するもの）
-- [ ] `vault/entities/` に `type: entity` ページが最低5本（Bash tool / Skills / MCP server 等）
+- [ ] `vault/entities/` に `type: entity` ページが最低5本（Bash tool / Skills / MCP server / Claude Design 等）
 - [ ] `/wiki-query` コマンドが実装され、Wiki 横断検索結果を `vault/syntheses/<topic>.md` として保存できる
+- [ ] `vault/syntheses/` に `type: synthesis` ページが最低5本
 
-#### 対象ソースの拡張
-- [ ] 公式の全6カテゴリ（cli, hooks, slash-commands, mcp, settings, sdk）に `source` 記事が最低3本ずつ存在
-- [ ] 全カテゴリで派生する concept / entity が育っている（少なくとも各カテゴリに紐づく派生ページが1本以上）
+#### コミュニティ source の追加系統取り込み
+- [ ] GitHub Releases (anthropics/claude-code), Anthropic 公式ブログ RSS の取り込み実績あり
+- [ ] 個人発信（Karpathy / Rezvani 等）の取り込み実績あり
+- [ ] `agent/fetchers/` に RSS / GitHub API 系統の fetcher 追加
 
-#### AUTO マーカー
-- [ ] AUTO セクションマーカー仕様（`<!-- AUTO:START --> ... <!-- AUTO:END -->`）が `vault/90_meta/auto-marker-spec.md` に確定
-- [ ] 既存の全 `source` 記事に AUTO マーカーが反映済み
-- [ ] 1記事の `/wiki-regenerate` で AUTO 領域のみが更新され、人手編集領域は保持される
+#### Claude エコシステム拡張カテゴリ
+- [ ] `vault/sources/official/claude-design/`, `vault/sources/official/skills/`, `vault/sources/official/agent-sdk/` のいずれか（最低 1 つ）に縮退仕様の source 記事
 
-#### 運用実測
-- [ ] `vault/90_meta/metrics.md` に人手レビュー工数の実測値（記事/分）が記録
+#### AUTO マーカー全展開・verify-links CI
+- [ ] 全 source 記事に AUTO マーカーが反映済み
+- [ ] `agent verify-links` の CI 別ジョブが週次稼働、drift 検出時の Issue 自動起票が動作
 
 ### Phase 3: GitHub Actions 自動化 + コミュニティ source + comparison 自動生成
 
@@ -347,6 +405,10 @@ agent/
 - **プレゼンテーション資料の自動生成**: Wiki からセミナー・勉強会用のスライドを生成する機能は別アイデアとして切り出す。
 - **多言語対応**: 日本語のみ。英語ミラーや他言語は対応しない。
 - **LLM 投入用 RAG インデックスの構築**: Wiki を LLM のコンテキストに直接投入するベクトル DB 等の整備は将来検討。
+- **公式日本語ドキュメントの素訳**: pivot 後は公式 source は「タイトル + 1段落要約 + 公式リンク」の縮退仕様に統一。素訳は公式日本語版（`code.claude.com/docs/ja/*`）に委ねる。
+- **`guide` / `cheatsheet` 種別の Phase 2-A 導入**: Phase 2-A では `recipe` 種別のみ先行。残り 2 種別は Phase 2-B / Phase 3 送り。
+- **X/Twitter / Reddit / 個人ブログの fetcher**: Phase 2-A は awesome-claude-code（GitHub README 構造化リスト）のみ。RSS / API 系統の fetcher 追加は Phase 2-B 以降。
+- **公式 6 カテゴリの面的整備**: 旧計画の `vault/sources/official/{slash-commands,mcp,settings,sdk}/` × 5本以上展開は撤回。Phase 2-B で Claude エコシステム拡張カテゴリ（claude-design / skills / agent-sdk）を縮退仕様で順次追加。
 
 ### 将来対応予定
 
@@ -462,3 +524,10 @@ wiki-for-claude-code/
 - 2026-05-05: 初版作成（ブレインストーミングセッション）
 - 2026-05-05: Karpathy LLM-Wiki gist と Rezvani Medium 記事の精読を踏まえ、ドメイン特化コンパイル型 Wiki への折衷案として全面改訂（ページ種別5種類、Skill 構造、ロードマップ2軸、3操作 + regenerate、信頼度スコア、log.md / index.md 導入）
 - 2026-05-05: Anthropic 公式ドキュメント（claude-code/skills.md）確認の結果、Skill 内 `commands/` サブディレクトリは公式仕様外と判明。Slash Command と Skill を分離する構造に改訂（Wiki 操作は `.claude/commands/wiki-*.md`、規約・テンプレート・hook は `.claude/skills/llm-wiki-for-claude-code/{SKILL.md, references/, hooks/}`）。詳細は ADR-014。
+- 2026-05-06: **Phase 2 pivot を反映**（壁打ちセッション由来）。公式日本語版（`code.claude.com/docs/ja/*`）の存在確認により「公式素訳」の付加価値が無効化されたため、主軸を **「コミュニティ実践知の自動整理 + 横断視点での再構成」** に転換。主な改訂:
+  - スコープ対象を Claude Code 単体 → **Claude エコシステム全般**（Claude Code + Claude Design + Skills + Agent SDK 等、リポジトリ名は維持）に拡張
+  - `source` 種別を **縮退仕様**（タイトル + 1段落要約 + 公式リンク + AUTO マーカー）に変更、3部構成強制を撤回
+  - ページ種別を 5 → **8 種別** に拡張（`recipe` / `guide` / `cheatsheet` を追加、うち `recipe` は Phase 2-A で先行検証）
+  - Phase 2 を **A（MVP）/ B（拡張）に分割**。コミュニティ source 取り込み（awesome-claude-code 先行）と実 LLM 統合を Phase 2-A に前倒し
+  - 公式 6 カテゴリ展開（旧機能 5）と drift 記事 2 本の全面書き直し（旧機能 1）を撤回
+  - 詳細な実装計画は plan ファイル `~/.claude/plans/synchronous-tickling-dragon.md` を参照

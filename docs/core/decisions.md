@@ -109,7 +109,7 @@ Obsidian Vault と Git リポジトリを同一ディレクトリに統合する
 
 ## ADR-003: 公式コンテンツは「要約 + リンク + 補足」3部構成とする（全文翻訳しない）
 
-**ステータス**: accepted（2026-05-05）
+**ステータス**: superseded by ADR-017（2026-05-06）— ADR-017 で縮退仕様に切替
 
 **コンテキスト**:
 Anthropic Usage Policy / docs.claude.com の利用規約により、公式ドキュメントの全文転載・全文翻訳は著作権・規約上のリスクがある。
@@ -583,6 +583,300 @@ Skill `references/` 配下のドキュメント（schema, three-part-rule, sourc
 
 ---
 
+## ADR-015: AUTO セクションマーカーの構文と境界制御を確定する
+
+**ステータス**: accepted（2026-05-06）— Phase 2-A で実装
+
+**コンテキスト**:
+
+ADR-006（2026-05-05）で AUTO セクションマーカーによる自動領域 / 人手領域の分離方針は確定したが、構文・境界制御・領域外バイト一致保持の規約は Phase 2 に持ち越されていた。Phase 2-A 着手にあたり、Writer 実装と人手レビューが両者ともに参照可能な SSoT を確定する必要がある。
+
+**決定**:
+
+AUTO マーカーの構文と運用規約を以下のとおり確定する:
+
+- **構文**: HTML コメント `<!-- AUTO:START -->` と `<!-- AUTO:END -->` を行頭に置く（行内 inline は禁止）
+- **ネスト禁止**: `START` 後に `END` より先に新たな `START` が出現した場合 `MalformedAutoMarkerError`
+- **複数領域許容**: 1 ファイル内に順序付きで複数の AUTO 領域を配置可。書き換え API は領域番号で指定する
+- **境界制御**: 構文不正（START のみ / END のみ / 順序不正 / ネスト）は Writer で例外を投げ、書き込みを中止する
+- **領域外バイト一致保持**: AUTO 領域外の行のバイト列は書き換え前後で完全一致しなければならない（Writer 内部 assert + テストで担保）
+- **frontmatter キー連動**: `auto_section_managed: true` を AUTO 導入済みファイルに付与する。Phase 2-A は対象 15 本のみ（公式 10 + recipe 5）、Phase 2-B で全展開
+
+詳細仕様は `vault/90_meta/auto-marker-spec.md` を SSoT とする。
+
+**理由**:
+
+- 公開 Wiki の品質ガードとして、人手編集を構造的に保護する仕組みは Phase 2-A で先行投入する価値が高い（Phase 3 の自動 PR 化前提）
+- HTML コメント構文は CommonMark 準拠で、Web 公開時のレンダラ互換性を確保できる
+- 行頭限定にすることで正規表現でなく行単位スキャナで構文解析可能となり、誤検知が起きにくい
+- 1 ファイル内に複数領域を許容することで、recipe の `## TL;DR` / `## 手順` のような複数の AUTO 領域パターンが自然に表現できる
+- 領域外バイト一致保持を構造的に保証することで、ADR-006 の主張（自動 PR が人手編集を上書きしない）を Writer 単位で検証可能になる
+
+**不採用案**:
+
+| 案 | 却下理由 |
+|----|---------|
+| 行内 inline 構文も許可 | パーサ複雑化、誤検知リスク増 |
+| ネスト許可 | 領域の責任主体が曖昧化、自動書き換え範囲が不確定 |
+| 1 ファイル 1 領域のみ | recipe 等の複数セクション構造に合わない |
+| frontmatter `auto_section_managed: true` のときのみ書き換え許可、領域指定なし | 部分書き換えができず、自動 / 人手の境界が粒度の粗い「ファイル単位」になり ADR-006 の主旨に反する |
+
+**影響**:
+
+- Phase 2-A で `agent/writers/markdown_writer.py` に `extract_auto_regions` / `replace_auto_regions` を実装
+- Phase 2-A 対象 15 本（公式 10 + recipe 5）に AUTO 領域を導入し `auto_section_managed: true` を付与
+- Phase 2-B で全 source 記事および派生種別へ展開
+- ADR-006 の方針を実装レベルで具体化（ADR-006 はそのまま accepted を維持）
+
+---
+
+## ADR-016: Phase 2 を 2-A（MVP）/ 2-B（拡張）に分割し、付加価値の主軸をコミュニティ知見整理に pivot する
+
+**ステータス**: accepted（2026-05-06）
+
+**コンテキスト**:
+
+Phase 1 受け入れテスト（2026-05-06 PASS）時に、上流公式ドキュメントの大規模 URL 移行（`docs.claude.com/claude-code/*` → `code.claude.com/docs/{en,ja}/*`）を検出した。同時に **公式日本語版（`code.claude.com/docs/ja/*`）の存在** を確認したことで、当初の前提「公式は英語のみ → 日本語素訳に付加価値あり」が崩れた。
+
+Phase 1 で生成した `vault/sources/official/` 10 本は「公式日本語ページの劣化コピー」化するリスクが顕在化し、付加価値の再定義が必要となった。
+
+**決定**:
+
+Phase 2 を以下の 2 段階に分割し、付加価値の主軸を pivot する:
+
+- **Phase 2-A（MVP）**: 実 Anthropic SDK 統合 + 公式 source 縮退 + コミュニティ source 1 系統取込み（awesome-claude-code）+ `recipe` 種別先行 + AUTO マーカー最小実装 + metrics 計測開始
+- **Phase 2-B（拡張）**: `concept` / `entity` / `synthesis` 種別本格実装 + `/wiki-query` + コミュニティ source 追加系統 + AUTO マーカー全展開 + Claude エコシステム拡張カテゴリ
+
+Phase 2-A 完了時に修正率 / LLM コスト / ライセンス問題の 3 中止条件を判定し、Phase 2-B 着手 / 再計画 / 中止を判断する。
+
+付加価値の再定義:
+
+- 「公式素訳 + 補足」から「**コミュニティに散らばる実践知の定期整理 + 横断視点での再構成**」へ主軸を移す
+- ユースケース別の `recipe`（Tips / セットアップ / チートシート）を新種別として先行投入
+- 公式 source は「タイトル + 1 段落要約 + 公式リンク + AUTO 領域」の縮退仕様に切り替え（詳細は ADR-017）
+
+**理由**:
+
+- 公式日本語版の存在発覚により、3 部構成（要約 + リンク + 補足）強制での「素訳 + α」は付加価値が著しく低下する
+- コミュニティ知見の整理は公式日本語版が代替できない領域で、本プロジェクト独自の付加価値が発揮できる
+- Phase 2-A の MVP 検証で metrics（修正率 / コスト）を測定してから Phase 2-B の本格実装に進むことで、不確実性を構造的に低減できる
+- `recipe` 種別を先行投入することで、ユースケース志向の Wiki としての方向性を早期に検証できる
+
+**不採用案**:
+
+| 案 | 却下理由 |
+|----|---------|
+| Phase 2 当初計画のまま進行（公式 6 カテゴリ展開 + 派生種別フル実装） | 付加価値が公式日本語版の劣化コピーに収束するリスクが大、metrics 不在のまま大量生成すると修正コストが膨張 |
+| Phase 2 を中止して全面再企画 | Phase 1 で確立した規約・agent 層を活かせない、再立ち上げのオーバーヘッドが大 |
+| 公式 source を全削除してコミュニティ知見専業へ転換 | 公式リファレンスへの導線提供は読者ニーズとして残る、削除は破壊的 |
+
+**影響**:
+
+- 旧 Phase 2 計画（`.steering/20260506-llm-wiki-for-claude-code-phase-2/`）は参考用に保持、本フェーズは `.steering/20260506-llm-wiki-for-claude-code-phase-2a/` で再計画
+- `CLAUDE.md` の「実装ロードマップ」表を 3 Phase × 2 軸から Phase 2-A / 2-B 分割反映に書き換える（Phase 2-A 完了時に実施）
+- ADR-017（公式 source 縮退仕様）と ADR-015（AUTO マーカー）を本フェーズで起票し、規約整合を取る
+
+---
+
+## ADR-017: 公式 source 種別を縮退仕様（タイトル + 1 段落要約 + 公式リンク + AUTO 領域）に切り替える
+
+**ステータス**: accepted（2026-05-06）— Phase 2-A で実装
+
+**コンテキスト**:
+
+ADR-003（2026-05-05）で公式由来コンテンツの「要約 + リンク + 補足解説」3 部構成を強制してきたが、ADR-016 で確認したとおり公式日本語版の存在により、3 部構成 source は「公式の劣化コピー + 限定的な補足」になりやすい。さらに、補足解説セクションは LLM 生成の品質ばらつきが大きく、人手レビューコストの主要因となっていた。
+
+一方で、公式リファレンスへの導線提供と、簡潔な構造化情報（タイトル + 概要 + 公式 URL）は読者にとって価値が残る。
+
+**決定**:
+
+`type: source` の構造を以下の **縮退仕様** に切り替える:
+
+```markdown
+---
+title: "<カテゴリ + ページ名>"
+type: source
+...
+---
+
+## 概要 (要約)
+<!-- AUTO:START -->
+（1 段落の日本語要約。3-5 文。公式日本語版の連続 100 文字一致を回避）
+<!-- AUTO:END -->
+
+## 公式ドキュメント
+→ {公式日本語版 URL}
+（最終確認: YYYY-MM-DD / 対象バージョン: X.Y.Z）
+```
+
+**変更点**（旧 ADR-003 比）:
+- `## 補足解説 (日本語)` セクションを **撤廃**（補足は recipe / concept / entity 種別側で表現する）
+- `## 概要 (要約)` を AUTO 領域化し、自動更新の主たる対象とする
+- `transclusion_validator`（連続 100 文字一致禁止）は継続適用
+
+ADR-003 は本 ADR で `superseded by ADR-017` とマークする。
+
+**理由**:
+
+- 公式日本語版が存在する以上、本プロジェクトの補足解説は重複コストが大きい。recipe / concept 種別で「横断視点」「ユースケース志向」を提供する方が付加価値が高い
+- AUTO 領域化により、上流ドキュメント変更時の自動追従が容易になる（再生成 = AUTO 領域更新）
+- 人手レビュー対象が「公式 URL の妥当性」「1 段落要約」のみに縮約され、レビュー時間と修正率が下がる見込み（A-7 中止条件で検証）
+- recipe / concept で本プロジェクト独自の価値（ハマりどころ・実例・関係性）を表現することで、source 種別はインデックス的役割に純化される
+
+**不採用案**:
+
+| 案 | 却下理由 |
+|----|---------|
+| ADR-003 の 3 部構成を維持し、補足解説の品質ガードを LLM プロンプトで強化 | 公式日本語版との重複が解消しない、人手レビューコストが下がらない |
+| `source` 種別を完全廃止し、公式リンクは `entity` 種別で表現 | `entity` の責務が肥大化、ホワイトリストとの紐付けが間接的になる |
+| 補足解説を `## 関連リンク`（wikilink リスト）に置き換える | 横断視点の表現力が失われる、既存記事の wikilink 再構築コスト大 |
+
+**影響**:
+
+- ADR-003（3 部構成）を `superseded by ADR-017` でマーク
+- `vault/90_meta/markdown-rules.md` の 3 部構成強制を縮退仕様に書き換え
+- `.claude/skills/llm-wiki-for-claude-code/references/three-part-rule.md` を縮退仕様に改訂
+- `agent/validators/three_part_validator.py` を縮退仕様の検証に書き換え（補足解説必須から AUTO 領域 + 公式リンクのみ必須へ）
+- Phase 2-A で対象 10 本（cli 6 + hooks 4）を縮退書き換え + AUTO 領域導入
+- `transclusion_validator` は継続適用（100 文字一致禁止）
+
+---
+
+## ADR-018: LLM バックエンドの Claude Code 経由化（`ClaudeCodeBackend` 追加）
+
+**ステータス**: accepted（2026-05-08）— ADR-019 完了に伴う empirical 検証 PASS（73.33s で `ClaudeCodeBackend.invoke` 実走を確認）により `proposed` から昇格
+
+**コンテキスト**:
+
+Phase 2-A で実装した `AnthropicBackend`（`agent/orchestration/llm.py:101-169`）は `ANTHROPIC_API_KEY` 必須・**従量課金**前提。利用者は Claude Code Max プランを契約済みで定額枠を活用したい。想定運用は「Claude Code 関連情報を **ローカル cron / launchd** で定期取り込み → Obsidian で閲覧 → 将来は Web 公開へ同期」というローカル運用主軸であり、API コスト線形増加の回避が望ましい。
+
+`acceptance-test-report.md §6.1`（Phase 2-A 受入れ）で方針転換が起票され、検討事項 5 点（§6.2）が別セッション課題として残置されていた。
+
+**決定**:
+
+- `agent/orchestration/llm.py` に **3 つ目のバックエンド** として `ClaudeCodeBackend` を追加し、`claude-agent-sdk`（Anthropic 公式 Python パッケージ）経由で Claude Code (Max プラン) に LLM を委譲する
+- `WIKI_LLM_BACKEND` の許容値を `stub|anthropic|claude-code` の 3 値に拡張
+- 既定値は **段階展開**:
+  - empirical 検証 PASS 前: `stub`（既存維持）
+  - empirical 検証 PASS 後: `claude-code` 昇格（別 PR）
+- `AnthropicBackend` は **CI / API 利用者向け** の選択肢として残置（廃止しない）
+- `StubBackend` はテスト DI / オフライン用途で残置
+- `claude-code` 選択時は `ANTHROPIC_API_KEY` を読まない（mock テストで検証）
+- `ClaudeCodeBackend.__init__` で `shutil.which("claude")` により `claude` バイナリの PATH 存在を確認、不在時は `ConfigurationError`（exit code 3）でフェイルファスト
+- SDK 例外 / 認証エラーは `LLMInvocationError` にラップ（既存例外階層を流用、新規例外なし）
+- `cache_system` フラグは noop（Claude Code 内部に caching を委譲、`metrics.md` への記録時は `N/A`）
+- リトライ戦略は `AnthropicBackend` と同一（1 回リトライ、再失敗で `LLMInvocationError`）
+
+**理由**:
+
+- Max プラン定額枠の活用により、記事数増加に伴う API コスト線形増加を回避できる
+- 既存 `LLMBackend` Protocol に並列実装を追加するだけで、`StubLLMClient` / `AnthropicBackend` には変更が入らず、Phase 2-A の規約・テスト 159 件 PASS に影響しない
+- `AnthropicBackend` を残置することで、CI / Max プラン非加入者でも `agent regenerate` を選択肢として実行可能
+- 認証情報の管理は `claude` CLI（`~/.claude/`）に委譲され、本プロジェクトに認証情報を持ち込まない（セキュリティ・運用コスト共に有利）
+
+**不採用案**:
+
+| 案 | 却下理由 |
+|----|---------|
+| `AnthropicBackend` を削除し `ClaudeCodeBackend` に統一 | CI 環境では Max プラン認証が一般に通らない、API 利用者向けの選択肢を失う |
+| `AnthropicBackend` を既定のまま維持し `claude-code` を補助選択肢に | ローカル運用主軸（Max プラン定額活用）の動機を満たさない、コスト最適化が後手に回る |
+| `subprocess` で `claude -p <prompt>` を直接呼ぶ（SDK を使わない） | 例外・usage 抽出・型安全性で SDK に劣る、SDK 仕様変動に追従しづらい |
+| caching 効果を `cache_system=True` で `claude-code` 側にも厳密に積む | Claude Code が独自にプロンプトキャッシュを管理する設計のため、明示制御は不確定。`metrics.md` の caching 計測は `AnthropicBackend` 側に残置する方針 |
+
+**影響**:
+
+- `pyproject.toml` に `claude-agent-sdk>=0.1.77` を追加、`uv.lock` 更新
+- `.env.example` に `WIKI_LLM_BACKEND=claude-code` の例とコメントを追記
+- `tests/unit/test_llm_claude_code.py` 新規追加（mock 経由で 21 件、テスト総数 159 → 180）
+- `agent/orchestration/llm.py` の `make_backend()` に `claude-code` 分岐と 3 値表記の不明値メッセージ
+- empirical 検証 PASS 後の別 PR で:
+  - `make_backend()` 既定値を `claude-code` に昇格
+  - `CLAUDE.md` の `agent regenerate` 運用ガード注記を削除（A-1-6 解消）
+  - `vault/90_meta/metrics.md` に Phase 2-A 対象 16 本の修正率を記録（A-6-2 / A-6-3 解消）
+  - 本 ADR の Status を `accepted` に昇格
+- CI 環境では `WIKI_LLM_BACKEND=anthropic` または `stub` を明示する運用方針（CI 設定変更は本 ADR では行わない）
+- `claude-agent-sdk` 内部例外型の精緻な絞り込みは Phase 2-B に持ち越し（`AnthropicBackend` の `except Exception` 絞り込みと並行実施）
+
+**関連 ADR**: ADR-015（AUTO マーカー）/ ADR-016（Phase 2 pivot）/ ADR-017（公式 source 縮退仕様）を踏襲。
+
+---
+
+## ADR-019: `agent regenerate` の AUTO 領域経路で LLM を実呼び出しする（noop stub の解消）
+
+**ステータス**: accepted（2026-05-08）— 実装完了。テスト 202 件 PASS / `agent validate --all` 16 本 PASS / `agent lint --all` 違反 0 / empirical で `WIKI_LLM_BACKEND=claude-code agent regenerate --force` が 73.33s で AUTO 領域を実 LLM 再生成することを確認
+
+**コンテキスト**:
+
+ADR-015（AUTO マーカー）/ ADR-017（source 縮退仕様）の設計意図は「AUTO 領域は取込み元の最新内容に基づき LLM が再生成する」だった。しかし Phase 2-A で実装された `agent/orchestration/regenerate.py` は、`auto_section_managed=true` 経路で次の noop stub に留まっている:
+
+```python
+# regenerate.py:100-105
+# Phase 2-A 時点では「再生成」プロンプトは AUTO 領域単位の生成に未対応のため、
+# スタブ動作のみサポート（実 LLM 統合での AUTO 領域差分生成は Phase 2-B）。
+new_inner_contents = ["\n".join(r.inner_lines) for r in regions]
+replace_auto_regions(target_path, new_inner_contents)
+```
+
+この実装は「AUTO 領域を抽出してそのまま書き戻す」だけで、`llm.generate` を呼ばない。結果として:
+
+- Phase 2-A 縮退仕様（公式 source 11 + recipe 5 = 16 本すべて `auto_section_managed: true`）に対して、`agent regenerate` は **どの LLM バックエンドが選ばれていても LLM を一度も呼ばない**
+- ADR-018 で追加した `ClaudeCodeBackend` の empirical 検証（`WIKI_LLM_BACKEND=claude-code agent regenerate ...`）が、表面上 exit 0 / 所要時間ログ条件を満たしても、`ClaudeCodeBackend.invoke` を実走させられない（2026-05-08 の検証で発覚）
+- 既存の `regenerate.py:117` の `load_prompt("source-regenerate")` 経路は AUTO マーカー無しの旧構造ページ専用となり、Phase 2-A 縮退仕様（全 source ページが AUTO マーカー導入済み）と矛盾し **実質デッドコード**
+
+「Phase 2-B で実装」とコメントで先送りされていたが、この穴を残したままでは ADR-018 の empirical 検証が成立せず、Phase 2-A の真の完了条件を満たせない。
+
+**決定**:
+
+- `agent regenerate` の `auto_section_managed=true` 経路で **LLM を実呼び出しする**（noop stub を解消）
+- AUTO マーカー仕様（`vault/90_meta/auto-marker-spec.md`）を拡張し、各 AUTO 領域に **`purpose` メタデータ** を付与可能にする
+- 構文: `<!-- AUTO:START purpose=summary-1-paragraph -->` / `<!-- AUTO:START purpose=recipe-tldr -->` 等。`purpose` 省略時は領域種別に応じた既定値（source 種別なら `summary-1-paragraph`、recipe 種別なら配置順から推論）
+- `purpose` は per-region プロンプトテンプレート（`agent/prompts/auto-region/<purpose>.md`）のディスパッチキーとして機能
+- 再生成フロー:
+  1. fetch source（HTTP）
+  2. content_hash 比較で **冪等性早期 return は維持**（`existing.source_version == fetch.source_version` なら no-op、これは正しい挙動）
+  3. 不一致 or `--force` 指定時に AUTO 領域を抽出し、各領域の `purpose` から prompt テンプレートを選択して `llm.generate` を呼び出す
+  4. 生成結果を `replace_auto_regions` で書き戻し、領域外バイト一致は writer が構造的に保証
+  5. frontmatter の `last_updated` / `source_version` / `fetched_at` を更新
+- 強制再生成フラグ `--force` を `agent regenerate` CLI に追加（content_hash 一致時も LLM を呼ばせる経路。empirical 検証や手動再生成で使う）
+- 既存 16 本の AUTO マーカーに `purpose` を後付けする後方互換マイグレーション（`purpose` 省略時に種別 + 順序から既定値を推論する fallback を実装）
+- 旧 `load_prompt("source-regenerate")` 経路（`regenerate.py:117` 以降のフルファイル再生成）は **削除**。Phase 2-A 縮退仕様で AUTO マーカー必須になったため不要
+
+**理由**:
+
+- ADR-015 / ADR-017 の設計意図に沿った「再生成」コマンドとして機能させる
+- ADR-018 の empirical 検証が `agent regenerate` で成立する（smoke test を別途用意する応急処置を回避）
+- `purpose` メタデータ方式は、種別追加のたびに orchestrator にハードコード分岐を増やすのを回避できる（プロンプトテンプレを足すだけで新種類に対応）
+- content_hash 早期 return を維持することで、変化なし時は LLM コストゼロを保つ（運用上重要）
+- `--force` で empirical 検証や trouble-shooting 時に LLM を強制起動でき、テスト容易性が上がる
+
+**不採用案**:
+
+| 案 | 却下理由 |
+|----|---------|
+| noop stub を維持し、別 smoke コマンドで `ClaudeCodeBackend` を検証 | `regenerate` が「再生成」として機能しないままとなる。デッドコード（`source-regenerate` プロンプト）を抱え続ける。設計意図と実装の乖離を温存する応急処置 |
+| AUTO 領域に `purpose` を付けず、ファイル種別＋配置順で全プロンプトを内部マップに固定 | 種別追加・領域構成変更のたびに orchestrator のハードコードを更新する必要があり、Phase 2-B での派生種別（concept/entity/synthesis）展開時に技術的負債化する |
+| `agent regenerate` を廃止し `agent ingest` に統合 | ingest（新規取込み）と regenerate（既存ページ更新）は冪等性ロジックや frontmatter 保持規則が異なる。統合すると ingest が肥大化し、ADR-015 のコマンド分離設計と矛盾 |
+| `purpose` ではなく per-region 任意 prompt テキストを AUTO マーカーコメントに直書き（`<!-- AUTO:START prompt="..." -->`） | プロンプトが Wiki ページに散在し、改善のたびに 16 本以上を一括編集する運用負荷。プロンプトテンプレは集中管理（`agent/prompts/`）が筋 |
+| `--force` を設けず、source_version frontmatter を手動クリアして強制再生成させる | 操作手順が煩雑、誤って frontmatter を破壊するリスク。CLI フラグの方が安全かつ明示的 |
+
+**影響**:
+
+- `agent/orchestration/regenerate.py` 大幅改修（AUTO 領域経路で LLM 呼び出し、`--force` 追加）
+- `agent/prompts/auto-region/<purpose>.md` 新規作成（最低限 `summary-1-paragraph.md` / `recipe-tldr.md` / `recipe-steps.md` の 3 本）
+- `vault/90_meta/auto-marker-spec.md` 改訂（`purpose` 構文・既定値推論ルール・purpose 一覧表）
+- `vault/90_meta/_schemas/frontmatter.schema.json` への影響は無し（frontmatter ではなく AUTO マーカー本体の構文拡張のため）
+- 既存 16 本の AUTO マーカーに `purpose` を後付けするマイグレーション（一括 sed + レビュー）
+- `agent/writers/markdown_writer.py` の `extract_auto_regions` 拡張（`purpose` 属性の parse、`AutoRegion` dataclass に `purpose: str | None` を追加）
+- 既存 `agent/prompts/source-regenerate.md` および `regenerate.py:117` 以降のフルファイル再生成経路を削除
+- `tests/unit/test_auto_markers.py` に `purpose` 構文テスト追加
+- `tests/unit/test_runner.py` / 統合テストに AUTO 領域 LLM 経路の mock テスト追加
+- ADR-018 の empirical 検証は **本 ADR の実装完了後に再実施**（`acceptance-test-report.md §2` および `empirical-checklist.md` の手順は変更不要、再実行で `ClaudeCodeBackend.invoke` が実走する想定）
+- Phase 2-A の真の完了条件: 本 ADR 実装 PASS + ADR-018 empirical 検証 PASS で、CONDITIONAL_PASS から正式 PASS へ昇格
+
+**関連 ADR**: ADR-006（AUTO 導入方針）/ ADR-015（AUTO 構文確定）/ ADR-017（公式 source 縮退仕様）/ ADR-018（`ClaudeCodeBackend`）。
+
+---
+
 ## 未決定事項
 
 以下は Phase 2 以降に持ち越し:
@@ -599,3 +893,7 @@ Skill `references/` 配下のドキュメント（schema, three-part-rule, sourc
 - 2026-05-05: ADR-014 追加（Slash Command と Skill を分離）。公式ドキュメント確認の結果、Skill 内 `commands/` サブディレクトリは公式仕様外と判明したため、ADR-012 を改訂し構造の詳細を ADR-014 に委譲。
 - 2026-05-05: ADR-001 訂正（Karpathy A/B/C を運用案ではなくレイヤー構造として正しく解釈、二次資料の Rezvani Medium 記事に依拠）。ADR-011（ページ種別5種類）と ADR-012（Skill パッケージング）を Karpathy gist + Rezvani Medium 記事の精読を踏まえて追加。Karpathy gist の原文 verbatim 引用は Phase 1 着手時に再確認する未決定事項として記録。
 - 2026-05-05: Phase 1 実装着手。ADR-010（Python 3.12+ / uv / pytest / ruff / mypy）と ADR-013（Skill `references/` はシンボリックリンクで同期）を追加。
+- 2026-05-06: Phase 2-A 着手。公式日本語版発覚（Phase 1 受入れテスト時）を受けて Phase 2 を A/B 分割し、付加価値主軸を「コミュニティ知見整理 + ユースケース志向 recipe」に pivot。ADR-015（AUTO マーカー構文）/ ADR-016（Phase 2 pivot）/ ADR-017（公式 source 縮退仕様）を追加。ADR-003 を superseded by ADR-017 でマーク。
+- 2026-05-08: ADR-018 起票（proposed）。Phase 2-A 受入れ §6.1 の方針転換を受けて、`ClaudeCodeBackend` を `LLMBackend` Protocol の 3 つ目の実装として追加し、Max プラン定額枠でのローカル日次自動化を主用途とする。`AnthropicBackend` は CI / API 利用者向けに残置、既定値は段階展開で empirical 検証 PASS 後に `claude-code` へ昇格予定。
+- 2026-05-08: ADR-018 の empirical 検証実施時、`agent regenerate` の `auto_section_managed=true` 経路が noop stub であり LLM を呼ばないことが発覚。ADR-019 を起票（proposed）し、AUTO 領域経路で LLM を実呼び出しする設計に切り替え、AUTO マーカーに `purpose` メタデータを導入。Phase 2-A の真の完了条件は ADR-019 実装 + ADR-018 empirical PASS とする。
+- 2026-05-08: ADR-019 実装完了。AUTO マーカー `purpose` 属性パーサ追加 / 旧 `source-regenerate` フルファイル経路削除 / 既存 16 本 (`source` 11 + `recipe` 5) のマーカー一括マイグレーション / `--force` フラグ追加 / `regenerate_source` の `make_backend()` 配線修正（`StubLLMClient()` ハードコードを撤去）。テスト 181 → 202 件 PASS、`agent validate --all` / `lint --all` 全 PASS、empirical で `claude-code` バックエンド経由の AUTO 領域再生成 73.33s 実走を確認。ADR-018 / ADR-019 を `accepted` に昇格。

@@ -80,18 +80,17 @@ claude_code_version: "1.5.0"
 reviewer: "tak"
 human_edited: false
 status: draft
-auto_section_managed: false
+auto_section_managed: true
 ---
 
 ## 概要 (要約)
+<!-- AUTO:START purpose=summary-1-paragraph -->
 Pre-Tool-Use Hook はツール実行前に呼ばれます。
+<!-- AUTO:END -->
 
 ## 公式ドキュメント
 → {source_url}
 （最終確認: 2026-05-05 / 対象バージョン: 1.5.0）
-
-## 補足解説 (日本語)
-ローカルファイルへの書き込みを監視できます。
 """
 
 

@@ -61,7 +61,7 @@ Thumbs.db
 .obsidian/graph.json
 
 # Steering（作業計画は個別管理、コミット対象外）
-# .steering/  # ローカル運用方針に応じてコメントアウト解除
+.steering/  # ローカル運用方針に応じてコメントアウト解除
 
 # uv
 uv.lock

@@ -21,7 +21,7 @@
     "title": { "type": "string", "minLength": 1 },
     "type": {
       "type": "string",
-      "enum": ["source", "concept", "entity", "comparison", "synthesis"]
+      "enum": ["source", "concept", "entity", "comparison", "synthesis", "recipe"]
     },
     "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
     "sources": {
@@ -53,7 +53,8 @@
     "claude_code_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+(-[A-Za-z0-9.-]+)?$"
-    }
+    },
+    "use_case": { "type": "string", "minLength": 1 }
   },
   "allOf": [
     {
@@ -62,6 +63,20 @@
       },
       "then": {
         "required": ["source_url", "fetched_at", "claude_code_version"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "const": "recipe" } }
+      },
+      "then": {
+        "required": ["use_case", "sources"],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "minItems": 2
+          }
+        }
       }
     }
   ]

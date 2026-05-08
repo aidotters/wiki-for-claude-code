@@ -15,7 +15,9 @@ from agent.writers.frontmatter import parse
 from agent.writers.markdown_writer import WriteResult, write
 from agent.writers.nav_files import append_log
 
-VALID_CATEGORIES = {"hooks", "cli", "slash-commands", "mcp", "settings", "sdk"}
+OFFICIAL_CATEGORIES = {"hooks", "cli", "slash-commands", "mcp", "settings", "sdk"}
+COMMUNITY_CATEGORIES = {"awesome-claude-code"}
+VALID_CATEGORIES = OFFICIAL_CATEGORIES | COMMUNITY_CATEGORIES
 
 
 @dataclass
@@ -99,7 +101,10 @@ def ingest_source(
         new_doc.metadata["source_version"] = fetch_result.source_version
 
     slug = slug_from_url(source_url)
-    article_path = vault_root / "sources" / "official" / category / f"{slug}.md"
+    if category in COMMUNITY_CATEGORIES:
+        article_path = vault_root / "sources" / "community" / category / f"{slug}.md"
+    else:
+        article_path = vault_root / "sources" / "official" / category / f"{slug}.md"
     write_result = write(article_path, new_doc)
     rel = article_path.relative_to(vault_root)
     append_log(vault_root, "ingest", f"{rel} from {source_url}")

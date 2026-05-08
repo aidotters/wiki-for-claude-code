@@ -8,7 +8,7 @@
 | キー | 型 | 必須 | サンプル | 説明 |
 |------|----|------|---------|------|
 | `title` | string | ✓ | `"Pre-Tool-Use Hook"` | ページタイトル（人間が読む見出し） |
-| `type` | enum | ✓ | `source` | ページ種別（`source` / `concept` / `entity` / `comparison` / `synthesis`） |
+| `type` | enum | ✓ | `source` | ページ種別（`source` / `concept` / `entity` / `comparison` / `synthesis` / `recipe`） |
 | `confidence` | number (0.0-1.0) | ✓ | `0.9` | 信頼度。`< 0.5` は `/wiki-lint` でフラグ |
 | `sources` | string[] (wikilink) | ✓ | `[]` または `["[[sources/official/cli/installation]]"]` | 引用元ページ。`source` 種別自身は空配列で可 |
 | `last_updated` | ISO 8601 date | ✓ | `2026-05-05` | 最終更新日 |
@@ -23,6 +23,15 @@
 | `fetched_at` | ISO 8601 datetime | ✓ | `"2026-05-05T10:00:00Z"` | 取得日時 |
 | `source_version` | string \| null | 任意 | `null` | 取込み元のバージョン（あれば） |
 | `claude_code_version` | SemVer | ✓ | `"1.5.0"` | 対象 Claude Code バージョン |
+
+## `type=recipe` のみ追加必須キー（Phase 2-A から）
+
+| キー | 型 | 必須 | サンプル | 説明 |
+|------|----|------|---------|------|
+| `use_case` | string | ✓ | `"Claude Code を新規プロジェクトでセットアップする"` | このレシピが対象とする具体的なユースケース（1 文） |
+| `sources` | string[] (wikilink, minItems=2) | ✓ | `["[[sources/official/cli/installation]]", "[[sources/official/cli/configuration]]"]` | 派生元の `vault/sources/` 配下ページ。**最低 2 件** |
+
+`recipe` 種別の `sources` 必須 2 件以上の理由は ADR-016（pivot）参照。1 件のみだと特定 source の単純な言い換えになり、横断視点という付加価値が出ない。
 
 ## 運用メタ（全種別共通、必須）
 
@@ -65,6 +74,27 @@ reviewer: "tak"
 human_edited: true
 status: published
 auto_section_managed: false
+---
+```
+
+## サンプル: `recipe` 種別（Phase 2-A から）
+
+```yaml
+---
+title: "Claude Code セットアップ"
+type: recipe
+use_case: "Claude Code を新規プロジェクトでセットアップして基本的な対話まで進める"
+confidence: 0.7
+sources:
+  - "[[sources/official/cli/installation]]"
+  - "[[sources/official/cli/configuration]]"
+last_updated: 2026-05-06
+stale: false
+tags: [recipe, setup, cli]
+reviewer: "tak"
+human_edited: true
+status: published
+auto_section_managed: true
 ---
 ```
 
